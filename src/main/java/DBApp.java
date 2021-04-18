@@ -1,3 +1,6 @@
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -5,20 +8,43 @@ import java.util.Map;
 
 public class DBApp implements DBAppInterface{
 
-    static HashMap<String,DBTable> db= new HashMap();
+    private HashMap<String,DBTable> db= new HashMap();
 
 
     //We init a DB by giving ColNameType hashtable ex put.("ID",INT) ; put.("Name",String);
-    //Max and Min are handled by giving type +MAX/MIN ex Min.put("ID", "0"); Max.put("ID","6969");
+    //Max and Min are handled by giving type +MAX/MIN ex Min.put("ID", "0"); Max.put("ID","1");
     //key is name
     //value is type
 
+    //Starting Logic:
+    //We will read the prev hashmap, and set it = to the global db
+    //db will only store DBTable and the name inside it
+    //actual tuples will be stored on pages and on the DBTable dataType
+
     public void init() {
-        System.out.println("Good Morning BBE");
+        //check if row config exists
+        //check if Db exists
+        HashMap<String,DBTable>  map;
+        try {
+            FileInputStream fileIn = new FileInputStream("./data/map.ser"); // get the file
+            ObjectInputStream in = new ObjectInputStream(fileIn); // read the file
+            map = (HashMap<String,DBTable> ) in.readObject(); //place in map
+            in.close();
+            fileIn.close();
+            //Read Pages
+        } catch (IOException i) {
+            System.out.println("NO PREVIOUS DB!!!");
+            return;
+        } catch (ClassNotFoundException c) {
+            System.out.println("INCORRECT DATATYPE!!!");
+            return;
+        }
+        db=map;
     }
 
     public void createTable(String tableName, String clusteringKey, Hashtable<String, String> colNameType, Hashtable<String, String> colNameMin, Hashtable<String, String> colNameMax) throws DBAppException {
         boolean hasCluster=false;
+        //init a page
 
         if(clusteringKey==null)
             throw new NoClusterException("TABLE MUST HAVE A CLUSTERING KEY!!!");
@@ -61,15 +87,15 @@ public class DBApp implements DBAppInterface{
 
         if(tableName==null)
             throw new NoTableNameException("TABLE MUST HAVE A NAME!!!");
-        if(!this.db.containsKey(tableName))
+        if(!db.containsKey(tableName))
             throw new NoTableNameException("TABLE NAME NOT FOUND");
 
-        for(Map.Entry m: colNameValue.entrySet()) {
-            if(!this.db.get(tableName).getColNameType().containsKey(m.getKey()))
-                throw new tableMismatchException("Column not found");
-        }
+//        for(Map.Entry m: colNameValue.entrySet()) {
+//            if(!this.db.get(tableName).getColNameType().containsKey(m.getKey()))
+//                throw new tableMismatchException("Column not found");
+//        }
 
-        if(!colNameValue.containsKey(this.db.get(tableName).getClusteringKey()))
+        if(!colNameValue.containsKey(db.get(tableName).getClusteringKey()))
             throw new NoClusterException("No primary key selected");
 
        // for(Map.Entry m: colNameValue.entrySet()){
@@ -90,4 +116,5 @@ public class DBApp implements DBAppInterface{
     public Iterator selectFromTable(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException {
         return null;
     }
+
 }

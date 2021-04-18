@@ -1,12 +1,13 @@
 import java.io.Serializable;
 import java.util.Hashtable;
+import java.util.Vector;
 
 public class DBTable implements Serializable {
 
     private int noPages;
     private String name;
     private String clusteringKey;
-    private Hashtable<String, String> colNameType;
+    private Vector tuples;
     private Hashtable<String, String> colNameMin;
     private Hashtable<String, String> colNameMax;
 
@@ -16,8 +17,24 @@ public class DBTable implements Serializable {
         this.clusteringKey=clusteringKey;
     }
 
-    public void setColNameType(Hashtable<String, String> colNameType) {
-        this.colNameType = colNameType;
+    public void setNoPages(int noPages) {
+        this.noPages = noPages;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setClusteringKey(String clusteringKey) {
+        this.clusteringKey = clusteringKey;
+    }
+
+    public Vector getTuples() {
+        return tuples;
+    }
+
+    public void setTuples(Vector tuples) {
+        this.tuples = tuples;
     }
 
     public void setColNameMin(Hashtable<String, String> colNameMin) {
@@ -40,9 +57,7 @@ public class DBTable implements Serializable {
         return clusteringKey;
     }
 
-    public Hashtable<String, String> getColNameType() {
-        return colNameType;
-    }
+
 
     public Hashtable<String, String> getColNameMin() {
         return colNameMin;
