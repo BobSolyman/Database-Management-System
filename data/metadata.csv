@@ -1,0 +1,6 @@
+﻿CityShop,ID,java.lang.Integer,TRUE,FALSE,0,10000
+CityShop,Name,java.lang.String,FALSE,FALSE,"""A""","""ZZZZZZZ"""
+CityShop,X,java.lang.Double,FALSE,TRUE,0,1000000
+notCityShop,ID,java.lang.Integer,TRUE,FALSE,0,10000
+notCityShop,Name,java.lang.String,FALSE,FALSE,"""A""","""ZZZZZZZ"""
+notCityShop,X,java.lang.Double,FALSE,TRUE,0,1000000

@@ -1,6 +1,4 @@
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -24,22 +22,81 @@ public class DBApp implements DBAppInterface{
     public void init() {
         //check if row config exists
         //check if Db exists
+        //we need to translate metadata into map (review)
         HashMap<String,DBTable>  map;
         try {
-            FileInputStream fileIn = new FileInputStream("./data/map.ser"); // get the file
-            ObjectInputStream in = new ObjectInputStream(fileIn); // read the file
-            map = (HashMap<String,DBTable> ) in.readObject(); //place in map
-            in.close();
-            fileIn.close();
-            //Read Pages
+            if(getFileSize()>0){
+            db = getMap("./data/metadata.csv");
+            } else {
+               System.out.println("gowa el else");
+            }
+
         } catch (IOException i) {
+            i.printStackTrace();
             System.out.println("NO PREVIOUS DB!!!");
             return;
-        } catch (ClassNotFoundException c) {
-            System.out.println("INCORRECT DATATYPE!!!");
-            return;
         }
-        db=map;
+
+
+
+    }
+
+    public static int getFileSize() throws IOException {
+       int i= 0;
+        try{
+            FileReader fr = new FileReader("./data/metadata.csv");
+            BufferedReader br = new BufferedReader(fr);
+            while (br.readLine() != null){
+                i++;
+            }
+            br.close();
+            fr.close();
+        }
+        catch(IOException e){
+            return 0;
+        }
+        return i;
+    }
+    //Method to read a file
+    public static HashMap<String,DBTable> getMap(String filePath)throws IOException{
+        HashMap<String,DBTable> temp = new HashMap();
+        FileReader fr = new FileReader(filePath);
+        BufferedReader br = new BufferedReader(fr);
+        String CurrentLine = "";
+        String cKey = "";
+        while((CurrentLine=br.readLine())!=null){
+            String[] line = CurrentLine.split(",");
+            String tableName = line[0].trim();
+            String colName = line[1].trim();
+            String colType = line[2].trim();
+            String clusterKey = line[3].trim();
+            if(clusterKey.toLowerCase().equals("true")){
+                cKey = colName;
+            }
+            String indexed = line[4].trim();
+            String min = line[5].trim();
+            String max = line[6].trim();
+
+            if(temp.containsKey(tableName)){
+                temp.get(tableName).addColumn(colName,colType,min,max);
+                temp.get(tableName).setClusteringKey(cKey);
+                System.out.println("1");
+            }
+            else{
+                Hashtable<String,String> newColType = new Hashtable<>();
+                newColType.put(colName,colType);
+                Hashtable<String,String> newColMin = new Hashtable<>();
+                newColMin.put(colName,min);
+                Hashtable<String,String> newColMax = new Hashtable<>();
+                newColMax.put(colName,max);
+                DBTable newTable = new DBTable(colName,cKey,newColType);
+                newTable.setColNameMin(newColMin);
+                newTable.setColNameMax(newColMax);
+                temp.put(tableName,newTable);
+                System.out.println("2");
+            }
+        }
+        return temp;
     }
 
     public void createTable(String tableName, String clusteringKey, Hashtable<String, String> colNameType, Hashtable<String, String> colNameMin, Hashtable<String, String> colNameMax) throws DBAppException {
@@ -69,7 +126,7 @@ public class DBApp implements DBAppInterface{
         }
 
 
-        DBTable current= new DBTable(tableName,clusteringKey);
+        DBTable current= new DBTable(tableName,clusteringKey,colNameType);
     }
 
     public void createIndex(String tableName, String[] columnNames) throws DBAppException {

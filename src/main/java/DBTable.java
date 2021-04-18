@@ -10,11 +10,20 @@ public class DBTable implements Serializable {
     private Vector tuples;
     private Hashtable<String, String> colNameMin;
     private Hashtable<String, String> colNameMax;
+    private Hashtable<String, String> colNameType;
 
 
-    public DBTable(String name,String clusteringKey){
+
+    public DBTable(String name, String clusteringKey,Hashtable<String,String> colNameType){
         this.name = name;
         this.clusteringKey=clusteringKey;
+        this.colNameType = colNameType;
+    }
+
+    public void addColumn(String name, String type, String min, String max){
+        this.colNameType.put(name,type);
+        this.colNameMin.put(name,min);
+        this.colNameMax.put(name,max);
     }
 
     public void setNoPages(int noPages) {
@@ -57,7 +66,13 @@ public class DBTable implements Serializable {
         return clusteringKey;
     }
 
+    public Hashtable<String, String> getColNameType() {
+        return colNameType;
+    }
 
+    public void setColNameType(Hashtable<String, String> colNameType) {
+        this.colNameType = colNameType;
+    }
 
     public Hashtable<String, String> getColNameMin() {
         return colNameMin;
