@@ -4,7 +4,7 @@ import java.util.Vector;
 
 public class DBTable implements Serializable {
 
-    private int noPages;
+    private Vector pages;
     private String name;
     private String clusteringKey;
     private Vector tuples;
@@ -26,9 +26,6 @@ public class DBTable implements Serializable {
         this.colNameMax.put(name,max);
     }
 
-    public void setNoPages(int noPages) {
-        this.noPages = noPages;
-    }
 
     public void setName(String name) {
         this.name = name;
@@ -54,9 +51,6 @@ public class DBTable implements Serializable {
         this.colNameMax = colNameMax;
     }
 
-    public int getNoPages() {
-        return noPages;
-    }
 
     public String getName() {
         return name;
