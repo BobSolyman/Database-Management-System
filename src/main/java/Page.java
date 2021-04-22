@@ -1,3 +1,4 @@
+import java.beans.Transient;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
@@ -6,11 +7,11 @@ import java.util.Vector;
 
 public class Page implements Serializable {
     private int noRows;
-    private static int pageNo;
+    private Vector clusteringKey;
     private Vector tuples;
     private String table;
-    private Object min;
-    private Object max;
+    private Transient min;
+    private Transient max;
     private static int maxPage;
 
     public Page(String table) throws IOException {
@@ -49,20 +50,20 @@ public class Page implements Serializable {
 
     public static int getMaxPage() { return maxPage; }
 
-    public static int getPageNo() {
-        return pageNo;
-    }
-
-    public static void setPageNo(int pageNo) {
-        Page.pageNo = pageNo;
-    }
-
     public Vector getTuples() {
         return tuples;
     }
 
     public void setTuples(Vector tuples) {
         this.tuples = tuples;
+    }
+
+    public Vector getClusteringKey() {
+        return clusteringKey;
+    }
+
+    public void setClusteringKey(Vector clusteringKey) {
+        this.clusteringKey = clusteringKey;
     }
 
     public String getTable() { return table; }

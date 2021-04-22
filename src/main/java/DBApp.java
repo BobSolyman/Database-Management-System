@@ -243,23 +243,30 @@ public class DBApp implements DBAppInterface{
             throw new tableMismatchException("Sizes of columns are incompatible");
 
         //
-        for(Map.Entry m: colNameValue.entrySet()){
-            if(db.get(tableName).getColNameType().get(m.getKey()).equals()){
-            }
-        }
 
+        //Get the table and find the clustering key
+        DBTable curTable= db.get(tableName);
+        Object clusteringKey= curTable.getClusteringKey();
+        Object curKey= colNameValue.get(clusteringKey);
 
 
         //Check if there are no pages in the table
-        if(db.get(tableName).getPages().size() == 0){
+        if(curTable.getPages().size() == 0){
             try {
                 Page p = new Page(tableName);
-                p.getTuples().add(colNameValue.values());
+                p.getTuples().add(colNameValue);
+                p.getClusteringKey().add(curKey);
+                p.setMax(curKey);
+                p.setMin(curKey);
+                serializePage(p,tableName+"0");
+                curTable.getPages().add(p);
             }
             catch(IOException e){
                 e.printStackTrace();
             }
         }
+
+
 
 
 
@@ -298,8 +305,56 @@ public class DBApp implements DBAppInterface{
 
 
 
+    public void serializePage(Object object, String filename){
+        try
+        {
+            //Saving of object in a file
+            FileOutputStream file = new FileOutputStream(filename + ".ser");
+            ObjectOutputStream out = new ObjectOutputStream(file);
 
+            // Method for serialization of object
+            out.writeObject(object);
 
+            out.close();
+            file.close();
+
+            System.out.println("Object has been serialized");
+        }
+
+        catch(IOException ex)
+        {
+            System.out.println("IOException is caught");
+        }
+    }
+
+    public Page deSerializePage(String filename){
+        Page output = null;
+
+        try
+        {
+            // Reading the object from a file
+            FileInputStream file = new FileInputStream(filename+".ser");
+            ObjectInputStream in = new ObjectInputStream(file);
+
+            // Method for deserialization of object
+            output = (Page)in.readObject();
+
+            in.close();
+            file.close();
+
+            System.out.println("Object has been deserialized ");
+        }
+
+        catch(IOException ex)
+        {
+            System.out.println("IOException is caught");
+        }
+        catch(ClassNotFoundException ex)
+        {
+            System.out.println("ClassNotFoundException is caught");
+        }
+        return output;
+    }
 
 
 
