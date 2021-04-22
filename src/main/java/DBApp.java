@@ -1,8 +1,5 @@
 import java.io.*;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 
 public class DBApp implements DBAppInterface{
 
@@ -26,10 +23,16 @@ public class DBApp implements DBAppInterface{
         HashMap<String,DBTable>  map;
         try {
             if(getFileSize()>0){
-            db = getMap("./data/metadata.csv");
-            db.get("CityShop").displayAttributes();
-            db.get("notCityShop").displayAttributes();
+            db = getMap("src/main/resources/metadata.csv");
+//            db.get("CityShop").displayAttributes();
+//            db.get("notCityShop").displayAttributes();
             } else {
+                FileWriter fr = new FileWriter("src/main/resources/metadata.csv");
+                BufferedWriter br2 = new BufferedWriter(fr);
+                String d = "Table Name, Column Name, Column Type, ClusteringKey, Indexed , min , max"+"\n";
+                br2.write(d);
+                br2.close();
+                fr.close();
                System.out.println("gowa el else");
             }
 
@@ -46,7 +49,7 @@ public class DBApp implements DBAppInterface{
     public static int getFileSize() throws IOException {
        int i= 0;
         try{
-            FileReader fr = new FileReader("./data/metadata.csv");
+            FileReader fr = new FileReader("src/main/resources/metadata.csv");
             BufferedReader br = new BufferedReader(fr);
             while (br.readLine() != null){
                 i++;
@@ -55,6 +58,7 @@ public class DBApp implements DBAppInterface{
             fr.close();
         }
         catch(IOException e){
+
             return 0;
         }
         return i;
@@ -65,13 +69,16 @@ public class DBApp implements DBAppInterface{
         FileReader fr = new FileReader(filePath);
         BufferedReader br = new BufferedReader(fr);
         String CurrentLine = "";
-        String cKey = "";
+        String cKey = null;
+
+        CurrentLine=br.readLine();
         while((CurrentLine=br.readLine())!=null){
             String[] line = CurrentLine.split(",");
             String tableName = line[0].trim();
             String colName = line[1].trim();
             String colType = line[2].trim();
             String clusterKey = line[3].trim();
+
             if(clusterKey.toLowerCase().equals("true")){
                 cKey = colName;
             }
@@ -81,7 +88,10 @@ public class DBApp implements DBAppInterface{
 
             if(temp.containsKey(tableName)){
                 temp.get(tableName).addColumn(colName,colType,min,max);
-                temp.get(tableName).setClusteringKey(cKey);
+                if (cKey!=null) {
+                    temp.get(tableName).setClusteringKey(cKey);
+                    cKey = null;
+                }
             }
             else{
                 Hashtable<String,String> newColType = new Hashtable<>();
@@ -91,6 +101,8 @@ public class DBApp implements DBAppInterface{
                 Hashtable<String,String> newColMax = new Hashtable<>();
                 newColMax.put(colName,max);
                 DBTable newTable = new DBTable(tableName,cKey,newColType);
+                if (cKey!=null)
+                    cKey=null;
                 newTable.setColNameMin(newColMin);
                 newTable.setColNameMax(newColMax);
                 temp.put(tableName,newTable);
@@ -99,9 +111,40 @@ public class DBApp implements DBAppInterface{
         return temp;
     }
 
+
+    public boolean checkCSV (String filePath, String tableName, Hashtable<String, String> colNameType ){
+      boolean flag = true ;
+        try {
+            FileReader fr = new FileReader(filePath);
+            BufferedReader br = new BufferedReader(fr);
+            String CurrentLine = "";
+
+            CurrentLine = br.readLine();
+            while ((CurrentLine = br.readLine()) != null) {
+                String[] line = CurrentLine.split(",");
+                String tName = line[0].trim();
+                String colName = line[1].trim();
+                if (tName.equals(tableName) && colNameType.containsKey(colName)){
+                    return false ;
+                    }
+
+                }
+                }
+
+        catch(Exception e){
+            e.printStackTrace();
+        }
+    return true ;
+    }
+
+
+
+
+
     public void createTable(String tableName, String clusteringKey, Hashtable<String, String> colNameType, Hashtable<String, String> colNameMin, Hashtable<String, String> colNameMax) throws DBAppException {
         boolean hasCluster=false;
-        //init a page
+        //uptade the csv
+
 
         if(clusteringKey==null)
             throw new NoClusterException("TABLE MUST HAVE A CLUSTERING KEY!!!");
@@ -125,8 +168,43 @@ public class DBApp implements DBAppInterface{
                 throw new tableMismatchException("Table content mismatch");
         }
 
+        try{
+            FileWriter fr = new FileWriter("src/main/resources/metadata.csv",true);
+            BufferedWriter br2 = new BufferedWriter(fr);
 
-        DBTable current= new DBTable(tableName,clusteringKey,colNameType);
+
+            if (checkCSV("src/main/resources/metadata.csv",tableName,colNameType)) {
+                DBTable current = new DBTable(tableName, clusteringKey, colNameType);
+                current.setColNameMin(colNameMin);
+                current.setColNameMax(colNameMax);
+                db.put(tableName,current);
+
+                Set <String> keys =colNameType.keySet();
+                for(String key: keys){
+                    String type = colNameType.get(key);
+                    String min = colNameMin.get(key);
+                    String max = colNameMax.get(key);
+                    if (key.equals(clusteringKey)){    // index default is false
+                        br2.write(tableName+","+key+","+type+","+"TRUE"+","+"FALSE"+","+min+","+max+"\n");
+                    }
+                    else {
+                        br2.write(tableName+","+key+","+type+","+"FALSE"+","+"FALSE"+","+min+","+max+"\n");
+                    }
+
+                }
+
+            }
+            else {
+                throw new InvalidDataTypeException("Attribute must be unique") ;
+
+            }
+            br2.close();
+            fr.close();
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     public void createIndex(String tableName, String[] columnNames) throws DBAppException {
@@ -134,35 +212,48 @@ public class DBApp implements DBAppInterface{
     }
 
     public void insertIntoTable(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException {
-        // Object violating min/max constraints
-        // duplicate cluster key   (AFTER CREATING RECORDS)
-        // Col name doesn't exist    (CHECK)
-        // table name doesn't exist/null  (CHECK)
-        // Object matches type
-        // N constraint
-        // No primary key   (CHECK)
+        //init a page on first insert
+        // Object violating min/max constraints              5
+        // duplicate cluster key   (AFTER CREATING RECORDS)  3
+        // Col name doesn't exist    (CHECK)      2
+        // table name doesn't exist/null  (CHECK) 1
+        // Object matches type                    4
+        // N constraint   to be read from the config
+        // No primary key   (CHECK)               3
 
         if(tableName==null)
             throw new NoTableNameException("TABLE MUST HAVE A NAME!!!");
         if(!db.containsKey(tableName))
             throw new NoTableNameException("TABLE NAME NOT FOUND");
+        if(!colNameValue.containsKey(db.get(tableName).getClusteringKey()))
+            throw new NoClusterException("No primary key selected");
+
 
 //        for(Map.Entry m: colNameValue.entrySet()) {
 //            if(!this.db.get(tableName).getColNameType().containsKey(m.getKey()))
 //                throw new tableMismatchException("Column not found");
 //        }
-
-        if(!colNameValue.containsKey(db.get(tableName).getClusteringKey()))
-            throw new NoClusterException("No primary key selected");
-
-       // for(Map.Entry m: colNameValue.entrySet()){
-        //    if(m.getValue() instanceof (Object)(this.db.get(tableName).getColNameType().get(m.getKey())))
-         //       throw new tableMismatchException("Column mismatch");
-     //   }
+//
+//
+//
+//        for(Map.Entry m: colNameValue.entrySet()){
+//            if(m.getValue() instanceof (Object)(this.db.get(tableName).getColNameType().get(m.getKey())))
+//                throw new tableMismatchException("Column mismatch");
+//        }
 
     }
 
     public void updateTable(String tableName, String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException {
+
+
+
+
+
+
+
+
+
+
 
     }
 
@@ -173,5 +264,42 @@ public class DBApp implements DBAppInterface{
     public Iterator selectFromTable(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException {
         return null;
     }
+
+
+
+
+
+
+
+
+
+
+
+   // update specific cell in csv MAYBE
+//    public static void updateCSV(String fileToUpdate, String replace,
+//                                 int row, int col) throws IOException {
+//
+//        File inputFile = new File(fileToUpdate);
+//
+//// Read existing file
+//        CSVReader reader = new CSVReader(new FileReader(inputFile), ',');
+//        List<String[]> csvBody = reader.readAll();
+//// get CSV row column  and replace with by using row and column
+//        csvBody.get(row)[col] = replace;
+//        reader.close();
+//
+//// Write to CSV file which is open
+//        CSVWriter writer = new CSVWriter(new FileWriter(inputFile), ',');
+//        writer.writeAll(csvBody);
+//        writer.flush();
+//        writer.close();
+//    }
+
+
+
+
+
+
+
 
 }
