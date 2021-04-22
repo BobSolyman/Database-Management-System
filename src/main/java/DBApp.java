@@ -27,6 +27,8 @@ public class DBApp implements DBAppInterface{
         try {
             if(getFileSize()>0){
             db = getMap("./data/metadata.csv");
+            db.get("CityShop").displayAttributes();
+            db.get("notCityShop").displayAttributes();
             } else {
                System.out.println("gowa el else");
             }
@@ -80,7 +82,6 @@ public class DBApp implements DBAppInterface{
             if(temp.containsKey(tableName)){
                 temp.get(tableName).addColumn(colName,colType,min,max);
                 temp.get(tableName).setClusteringKey(cKey);
-                System.out.println("1");
             }
             else{
                 Hashtable<String,String> newColType = new Hashtable<>();
@@ -89,11 +90,10 @@ public class DBApp implements DBAppInterface{
                 newColMin.put(colName,min);
                 Hashtable<String,String> newColMax = new Hashtable<>();
                 newColMax.put(colName,max);
-                DBTable newTable = new DBTable(colName,cKey,newColType);
+                DBTable newTable = new DBTable(tableName,cKey,newColType);
                 newTable.setColNameMin(newColMin);
                 newTable.setColNameMax(newColMax);
                 temp.put(tableName,newTable);
-                System.out.println("2");
             }
         }
         return temp;

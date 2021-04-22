@@ -1,5 +1,6 @@
 import java.io.Serializable;
 import java.util.Hashtable;
+import java.util.Set;
 import java.util.Vector;
 
 public class DBTable implements Serializable {
@@ -26,6 +27,14 @@ public class DBTable implements Serializable {
         this.colNameMax.put(name,max);
     }
 
+    public void displayAttributes(){
+        System.out.println("Name: "+this.name +" ck: "+ this.clusteringKey);
+        Set<String> keys = this.getColNameType().keySet();
+        for(String key: keys){
+            String value = this.getColNameType().get(key);
+            System.out.println("===="+key+": "+value);
+        }
+    }
 
     public void setName(String name) {
         this.name = name;
