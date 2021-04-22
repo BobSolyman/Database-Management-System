@@ -7,19 +7,19 @@ public class test {
     public static void main(String[] args) throws IOException, DBAppException {
         DBApp x=new DBApp();
         x.init();
-        Hashtable htblColNameType = new Hashtable( );
-        htblColNameType.put("id", "java.lang.Integer");
-        htblColNameType.put("name", "java.lang.String");
-        htblColNameType.put("gpa", "java.lang.Double");
-        Hashtable htblColNameMin = new Hashtable( );
-        htblColNameMin.put("id", "0");
-        htblColNameMin.put("name", "a");
-        htblColNameMin.put("gpa", "0");
-        Hashtable htblColNameMax = new Hashtable( );
-        htblColNameMax.put("id", "999");
-        htblColNameMax.put("name", "ZZZ");
-        htblColNameMax.put("gpa", "999.999");
-        x.createTable( "test", "id", htblColNameType,htblColNameMin,htblColNameMax );
+//        Hashtable htblColNameType = new Hashtable( );
+//        htblColNameType.put("id", "java.lang.Integer");
+//        htblColNameType.put("name", "java.lang.String");
+//        htblColNameType.put("gpa", "java.lang.Double");
+//        Hashtable htblColNameMin = new Hashtable( );
+//        htblColNameMin.put("id", "0");
+//        htblColNameMin.put("name", "a");
+//        htblColNameMin.put("gpa", "0");
+//        Hashtable htblColNameMax = new Hashtable( );
+//        htblColNameMax.put("id", "999");
+//        htblColNameMax.put("name", "ZZZ");
+//        htblColNameMax.put("gpa", "999.999");
+//        x.createTable( "test", "id", htblColNameType,htblColNameMin,htblColNameMax );
 
 
 

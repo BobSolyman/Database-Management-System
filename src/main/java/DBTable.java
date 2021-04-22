@@ -5,7 +5,7 @@ import java.util.Vector;
 
 public class DBTable implements Serializable {
 
-    private Vector pages;
+    private Vector<Page> pages;
     private String name;
     private String clusteringKey;
     private Vector tuples;
@@ -19,6 +19,7 @@ public class DBTable implements Serializable {
         this.name = name;
         this.clusteringKey=clusteringKey;
         this.colNameType = colNameType;
+        this.pages = new Vector<Page>();
     }
 
     public void addColumn(String name, String type, String min, String max){
@@ -35,6 +36,10 @@ public class DBTable implements Serializable {
             System.out.println("===="+key+": "+value);
         }
     }
+
+    public Vector<Page> getPages() { return pages; }
+
+    public void setPages(Vector<Page> pages) { this.pages = pages; }
 
     public void setName(String name) {
         this.name = name;

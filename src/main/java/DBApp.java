@@ -143,7 +143,7 @@ public class DBApp implements DBAppInterface{
 
     public void createTable(String tableName, String clusteringKey, Hashtable<String, String> colNameType, Hashtable<String, String> colNameMin, Hashtable<String, String> colNameMax) throws DBAppException {
         boolean hasCluster=false;
-        //uptade the csv
+        //update the csv
 
 
         if(clusteringKey==null)
@@ -195,7 +195,7 @@ public class DBApp implements DBAppInterface{
 
             }
             else {
-                throw new InvalidDataTypeException("Attribute must be unique") ;
+                throw new InvalidDataTypeException("ATTRIBUTE MUST BE UNIQUE!!!") ;
 
             }
             br2.close();
@@ -214,28 +214,59 @@ public class DBApp implements DBAppInterface{
     public void insertIntoTable(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException {
         //init a page on first insert
         // Object violating min/max constraints              5
-        // duplicate cluster key   (AFTER CREATING RECORDS)  3
-        // Col name doesn't exist    (CHECK)      2
-        // table name doesn't exist/null  (CHECK) 1
+
         // Object matches type                    4
         // N constraint   to be read from the config
-        // No primary key   (CHECK)               3
 
+         //Table name entered is null
         if(tableName==null)
             throw new NoTableNameException("TABLE MUST HAVE A NAME!!!");
+
+        //Table name doesn't exist
         if(!db.containsKey(tableName))
-            throw new NoTableNameException("TABLE NAME NOT FOUND");
-        if(!colNameValue.containsKey(db.get(tableName).getClusteringKey()))
-            throw new NoClusterException("No primary key selected");
+            throw new NoTableNameException("TABLE NAME NOT FOUND!!!");
+
+        //No primary key
+        if(!colNameValue.containsKey(db.get(tableName).getClusteringKey()) && colNameValue.get(db.get(tableName).getClusteringKey())!=null)
+            throw new NoClusterException("NO PRIMARY KEY SELECTED!!!");
+
+        //Check if column doesn't exist
+        Set <String> keys =colNameValue.keySet();
+        for(String key: keys) {
+            if (!db.get(tableName).getColNameType().containsKey(key)) {
+                throw new tableMismatchException("COLUMN NOT FOUND!!!");
+            }
+        }
+
+        //Check if no of columns matches table
+        if(db.get(tableName).getColNameType().size()!=colNameValue.size())
+            throw new tableMismatchException("Sizes of columns are incompatible");
+
+        //
+        for(Map.Entry m: colNameValue.entrySet()){
+            if(db.get(tableName).getColNameType().get(m.getKey()).equals()){
+            }
+        }
 
 
-//        for(Map.Entry m: colNameValue.entrySet()) {
-//            if(!this.db.get(tableName).getColNameType().containsKey(m.getKey()))
-//                throw new tableMismatchException("Column not found");
-//        }
-//
-//
-//
+
+        //Check if there are no pages in the table
+        if(db.get(tableName).getPages().size() == 0){
+            try {
+                Page p = new Page(tableName);
+                p.getTuples().add(colNameValue.values());
+            }
+            catch(IOException e){
+                e.printStackTrace();
+            }
+        }
+
+
+
+
+
+
+
 //        for(Map.Entry m: colNameValue.entrySet()){
 //            if(m.getValue() instanceof (Object)(this.db.get(tableName).getColNameType().get(m.getKey())))
 //                throw new tableMismatchException("Column mismatch");
@@ -264,7 +295,6 @@ public class DBApp implements DBAppInterface{
     public Iterator selectFromTable(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException {
         return null;
     }
-
 
 
 
