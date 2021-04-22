@@ -1,4 +1,8 @@
 import java.io.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class DBApp implements DBAppInterface{
@@ -211,7 +215,7 @@ public class DBApp implements DBAppInterface{
         //Milestone 2
     }
 
-    public void insertIntoTable(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException {
+    public void insertIntoTable(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException, ParseException {
         //init a page on first insert
         // Object violating min/max constraints              5
 
@@ -244,8 +248,39 @@ public class DBApp implements DBAppInterface{
 
         //
         for(Map.Entry m: colNameValue.entrySet()){
-            if(db.get(tableName).getColNameType().get(m.getKey()).equals()){
+            if(!((Object)m.getValue()).getClass().getName().equals(db.get(tableName).getColNameType().get(m.getKey()))){
+                throw new InvalidDataTypeException("Columns mismatch");
             }
+            if(((Object)m.getValue()).getClass().getName().equals("java.lang.String")) {
+                String s = (String)m.getValue();
+                if( s.compareTo(db.get(tableName).getColNameMin().get(m.getKey()))<0 || s.compareTo(db.get(tableName).getColNameMax().get(m.getKey()))>0)
+                    throw new InvalidDataTypeException("Boundary error");
+            }
+            else if(((Object)m.getValue()).getClass().getName().equals("java.lang.Double")){
+               Double s = (Double)m.getValue();
+                if(s<Double.parseDouble(db.get(tableName).getColNameMin().get(m.getKey())) || s>Double.parseDouble(db.get(tableName).getColNameMax().get(m.getKey())))
+                    throw new InvalidDataTypeException("Boundary error");
+                }
+            else if(((Object)m.getValue()).getClass().getName().equals("java.lang.Integer")){
+                int s = (int)m.getValue();
+                if(s<Integer.parseInt(db.get(tableName).getColNameMin().get(m.getKey())) || s>Integer.parseInt(db.get(tableName).getColNameMax().get(m.getKey())))
+                    throw new InvalidDataTypeException("Boundary error");
+            }
+            else if(((Object)m.getValue()).getClass().getName().equals("java.util.Date")){
+                String min = db.get(tableName).getColNameMin().get(m.getKey());
+                Date date1=new SimpleDateFormat("dd/MM/yyyy").parse(min);
+
+                String max = db.get(tableName).getColNameMax().get(m.getKey());
+                Date date2=new SimpleDateFormat("dd/MM/yyyy").parse(max);
+
+                Date s = (Date)m.getValue();
+                if(s.compareTo(date1)<0 || s.compareTo(date2)>0)
+                    throw new InvalidDataTypeException("Boundary error");
+            }
+            else{
+                throw new InvalidDataTypeException("Invalid input");
+            }
+
         }
 
 
