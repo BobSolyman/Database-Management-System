@@ -29,7 +29,7 @@ public class DBApp implements DBAppInterface{
             if(getFileSize()>0){
             db = getMap("src/main/resources/metadata.csv");
 //            db.get("CityShop").displayAttributes();
-//            db.get("notCityShop").displayAttributes();
+            db.get("test").displayAttributes();
             } else {
                 FileWriter fr = new FileWriter("src/main/resources/metadata.csv");
                 BufferedWriter br2 = new BufferedWriter(fr);
@@ -247,41 +247,41 @@ public class DBApp implements DBAppInterface{
             throw new DBAppException("Sizes of columns are incompatible");
 
         //
-        for(Map.Entry m: colNameValue.entrySet()){
-            if(!((Object)m.getValue()).getClass().getName().equals(db.get(tableName).getColNameType().get(m.getKey()))){
-                throw new DBAppException("Columns mismatch");
-            }
-            if(((Object)m.getValue()).getClass().getName().equals("java.lang.String")) {
-                String s = (String)m.getValue();
-                if( s.compareTo(db.get(tableName).getColNameMin().get(m.getKey()))<0 || s.compareTo(db.get(tableName).getColNameMax().get(m.getKey()))>0)
-                    throw new DBAppException("Boundary error");
-            }
-            else if(((Object)m.getValue()).getClass().getName().equals("java.lang.Double")){
-               Double s = (Double)m.getValue();
-                if(s<Double.parseDouble(db.get(tableName).getColNameMin().get(m.getKey())) || s>Double.parseDouble(db.get(tableName).getColNameMax().get(m.getKey())))
-                    throw new DBAppException("Boundary error");
-                }
-            else if(((Object)m.getValue()).getClass().getName().equals("java.lang.Integer")){
-                int s = (int)m.getValue();
-                if(s<Integer.parseInt(db.get(tableName).getColNameMin().get(m.getKey())) || s>Integer.parseInt(db.get(tableName).getColNameMax().get(m.getKey())))
-                    throw new DBAppException("Boundary error");
-            }
-            else if(((Object)m.getValue()).getClass().getName().equals("java.util.Date")){
-                String min = db.get(tableName).getColNameMin().get(m.getKey());
-                Date date1=new SimpleDateFormat("dd/MM/yyyy").parse(min);
-
-                String max = db.get(tableName).getColNameMax().get(m.getKey());
-                Date date2=new SimpleDateFormat("dd/MM/yyyy").parse(max);
-
-                Date s = (Date)m.getValue();
-                if(s.compareTo(date1)<0 || s.compareTo(date2)>0)
-                    throw new DBAppException("Boundary error");
-            }
-            else{
-                throw new DBAppException("Invalid input");
-            }
-
-        }
+//        for(Map.Entry m: colNameValue.entrySet()){
+//            if(!((Object)m.getValue()).getClass().getName().equals(db.get(tableName).getColNameType().get(m.getKey()))){
+//                throw new DBAppException("Columns mismatch");
+//            }
+//            if(((Object)m.getValue()).getClass().getName().equals("java.lang.String")) {
+//                String s = (String)m.getValue();
+//                if( s.compareTo(db.get(tableName).getColNameMin().get(m.getKey()))<0 || s.compareTo(db.get(tableName).getColNameMax().get(m.getKey()))>0)
+//                    throw new DBAppException("Boundary error");
+//            }
+//            else if(((Object)m.getValue()).getClass().getName().equals("java.lang.Double")){
+//               Double s = (Double)m.getValue();
+//                if(s<Double.parseDouble(db.get(tableName).getColNameMin().get(m.getKey())) || s>Double.parseDouble(db.get(tableName).getColNameMax().get(m.getKey())))
+//                    throw new DBAppException("Boundary error");
+//                }
+//            else if(((Object)m.getValue()).getClass().getName().equals("java.lang.Integer")){
+//                int s = (int)m.getValue();
+//                if(s<Integer.parseInt(db.get(tableName).getColNameMin().get(m.getKey())) || s>Integer.parseInt(db.get(tableName).getColNameMax().get(m.getKey())))
+//                    throw new DBAppException("Boundary error");
+//            }
+//            else if(((Object)m.getValue()).getClass().getName().equals("java.util.Date")){
+//                String min = db.get(tableName).getColNameMin().get(m.getKey());
+//                Date date1=new SimpleDateFormat("dd/MM/yyyy").parse(min);
+//
+//                String max = db.get(tableName).getColNameMax().get(m.getKey());
+//                Date date2=new SimpleDateFormat("dd/MM/yyyy").parse(max);
+//
+//                Date s = (Date)m.getValue();
+//                if(s.compareTo(date1)<0 || s.compareTo(date2)>0)
+//                    throw new DBAppException("Boundary error");
+//            }
+//            else{
+//                throw new DBAppException("Invalid input");
+//            }
+//
+//        }
 
         //Get the table and find the clustering key
         DBTable curTable= db.get(tableName);
@@ -293,14 +293,13 @@ public class DBApp implements DBAppInterface{
         if(curTable.getPages().size() == 0){
             try {
                 Page p = new Page(tableName);
-                Record r = new Record(colNameValue,(String) clusteringKey);
-                p.insertRecord(r);
-                p.getClusteringKey().add(curKey);
                 p.setMax(curKey);
                 p.setMin(curKey);
-                p.setNoRows(p.getTuples().size());
+                Record r = new Record(colNameValue,(String) clusteringKey);
+                p.insertRecord(r);
                 serializePage(p,tableName+"0");
-                curTable.getPages().add(p);
+                updateLocation(tableName+"0",p);
+                System.out.println(curTable.getPages());
             }
             catch(IOException e){
                 e.printStackTrace();
@@ -350,7 +349,7 @@ public class DBApp implements DBAppInterface{
         try
         {
             //Saving of object in a file
-            FileOutputStream file = new FileOutputStream(filename + ".ser");
+            FileOutputStream file = new FileOutputStream("src/main/resources/pages/"+filename + ".ser");
             ObjectOutputStream out = new ObjectOutputStream(file);
 
             // Method for serialization of object
@@ -364,7 +363,7 @@ public class DBApp implements DBAppInterface{
 
         catch(IOException ex)
         {
-            System.out.println("IOException is caught");
+            ex.printStackTrace();
         }
     }
 
@@ -374,7 +373,7 @@ public class DBApp implements DBAppInterface{
         try
         {
             // Reading the object from a file
-            FileInputStream file = new FileInputStream(filename+".ser");
+            FileInputStream file = new FileInputStream("src/main/resources/pages/"+filename+".ser");
             ObjectInputStream in = new ObjectInputStream(file);
 
             // Method for deserialization of object
@@ -397,6 +396,39 @@ public class DBApp implements DBAppInterface{
         return output;
     }
 
+    //Method to update Page location
+    public void updateLocation(String location,Page page){
+        try {
+            FileWriter fr = new FileWriter("src/main/resources/pageLocations.csv", true);
+            BufferedWriter br = new BufferedWriter(fr);
+            br.write(location+","+page.getMax()+","+page.getMin()+"\n");
+            br.close();
+            fr.close();
+
+            //update vector table in DBTable
+            //construct my tuple
+            Vector<String> pageInfo= new Vector();
+            pageInfo.add(location);
+            pageInfo.add((String) page.getMax());
+            pageInfo.add((String) page.getMin());
+
+            //Get Table
+            DBTable curTable= db.get(page.getTable());
+
+            //check if it exists
+            if(curTable.getPages().contains(pageInfo)){
+               int curLocation= curTable.getPages().lastIndexOf(pageInfo);
+               curTable.getPages().add(curLocation,pageInfo);
+            }
+            else{
+                //if it doesn't already exist add it
+                curTable.getPages().add(pageInfo);
+            }
+        }
+        catch(IOException ex){
+            ex.printStackTrace();
+        }
+    }
 
 
 

@@ -4,8 +4,8 @@ import java.util.Set;
 import java.util.Vector;
 
 public class DBTable implements Serializable {
-
-    private Vector<Page> pages;
+    //contains pages within this table in form [location,upperBound,LowerBound]
+    private Vector<Vector<String>> pages;
     private String name;
     private String clusteringKey;
     private Vector tuples;
@@ -19,7 +19,7 @@ public class DBTable implements Serializable {
         this.name = name;
         this.clusteringKey=clusteringKey;
         this.colNameType = colNameType;
-        this.pages = new Vector<Page>();
+        this.pages = new Vector<Vector<String>>();
     }
 
     public void addColumn(String name, String type, String min, String max){
@@ -37,9 +37,9 @@ public class DBTable implements Serializable {
         }
     }
 
-    public Vector<Page> getPages() { return pages; }
+    public Vector<Vector<String>> getPages() { return pages; }
 
-    public void setPages(Vector<Page> pages) { this.pages = pages; }
+    public void setPages(Vector<Vector<String>> pages) { this.pages = pages; }
 
     public void setName(String name) {
         this.name = name;
