@@ -151,25 +151,25 @@ public class DBApp implements DBAppInterface{
 
 
         if(clusteringKey==null)
-            throw new NoClusterException("TABLE MUST HAVE A CLUSTERING KEY!!!");
+            throw new DBAppException("TABLE MUST HAVE A CLUSTERING KEY!!!");
         if(tableName==null)
-            throw new NoTableNameException("TABLE MUST HAVE A NAME!!!");
+            throw new DBAppException("TABLE MUST HAVE A NAME!!!");
 
         for(Map.Entry m: colNameType.entrySet()){
             if(!(m.getValue().equals("java.lang.Integer")) && !(m.getValue().equals("java.lang.String")) && !(m.getValue().equals("java.lang.Double")) && !(m.getValue().equals("java.util.Date")) ) {
-                throw new InvalidDataTypeException(m.getValue()+ " IS NOT A VALID TYPE!!!");
+                throw new DBAppException(m.getValue()+ " IS NOT A VALID TYPE!!!");
             }
             if(m.getKey().equals(clusteringKey))
                 hasCluster=true;
         }
         if(!hasCluster)
-            throw new NoClusterException("TABLE MUST HAVE A CLUSTERING KEY!!!");
+            throw new DBAppException("TABLE MUST HAVE A CLUSTERING KEY!!!");
         if(colNameType.size()!=colNameMin.size() || colNameType.size()!=colNameMax.size() || colNameMin.size()!=colNameMax.size())
-            throw new tableMismatchException("Sizes of columns are incompatible");
+            throw new DBAppException("Sizes of columns are incompatible");
 
         for(Map.Entry m: colNameType.entrySet()){
             if(!colNameMin.containsKey(m.getKey()) || !colNameMax.containsKey(m.getKey()))
-                throw new tableMismatchException("Table content mismatch");
+                throw new DBAppException("Table content mismatch");
         }
 
         try{
@@ -199,7 +199,7 @@ public class DBApp implements DBAppInterface{
 
             }
             else {
-                throw new InvalidDataTypeException("ATTRIBUTE MUST BE UNIQUE!!!") ;
+                throw new DBAppException("ATTRIBUTE MUST BE UNIQUE!!!") ;
 
             }
             br2.close();
@@ -224,47 +224,47 @@ public class DBApp implements DBAppInterface{
 
          //Table name entered is null
         if(tableName==null)
-            throw new NoTableNameException("TABLE MUST HAVE A NAME!!!");
+            throw new DBAppException("TABLE MUST HAVE A NAME!!!");
 
         //Table name doesn't exist
         if(!db.containsKey(tableName))
-            throw new NoTableNameException("TABLE NAME NOT FOUND!!!");
+            throw new DBAppException("TABLE NAME NOT FOUND!!!");
 
         //No primary key
         if(!colNameValue.containsKey(db.get(tableName).getClusteringKey()) && colNameValue.get(db.get(tableName).getClusteringKey())!=null)
-            throw new NoClusterException("NO PRIMARY KEY SELECTED!!!");
+            throw new DBAppException("NO PRIMARY KEY SELECTED!!!");
 
         //Check if column doesn't exist
         Set <String> keys =colNameValue.keySet();
         for(String key: keys) {
             if (!db.get(tableName).getColNameType().containsKey(key)) {
-                throw new tableMismatchException("COLUMN NOT FOUND!!!");
+                throw new DBAppException("COLUMN NOT FOUND!!!");
             }
         }
 
         //Check if no of columns matches table
         if(db.get(tableName).getColNameType().size()!=colNameValue.size())
-            throw new tableMismatchException("Sizes of columns are incompatible");
+            throw new DBAppException("Sizes of columns are incompatible");
 
         //
         for(Map.Entry m: colNameValue.entrySet()){
             if(!((Object)m.getValue()).getClass().getName().equals(db.get(tableName).getColNameType().get(m.getKey()))){
-                throw new InvalidDataTypeException("Columns mismatch");
+                throw new DBAppException("Columns mismatch");
             }
             if(((Object)m.getValue()).getClass().getName().equals("java.lang.String")) {
                 String s = (String)m.getValue();
                 if( s.compareTo(db.get(tableName).getColNameMin().get(m.getKey()))<0 || s.compareTo(db.get(tableName).getColNameMax().get(m.getKey()))>0)
-                    throw new InvalidDataTypeException("Boundary error");
+                    throw new DBAppException("Boundary error");
             }
             else if(((Object)m.getValue()).getClass().getName().equals("java.lang.Double")){
                Double s = (Double)m.getValue();
                 if(s<Double.parseDouble(db.get(tableName).getColNameMin().get(m.getKey())) || s>Double.parseDouble(db.get(tableName).getColNameMax().get(m.getKey())))
-                    throw new InvalidDataTypeException("Boundary error");
+                    throw new DBAppException("Boundary error");
                 }
             else if(((Object)m.getValue()).getClass().getName().equals("java.lang.Integer")){
                 int s = (int)m.getValue();
                 if(s<Integer.parseInt(db.get(tableName).getColNameMin().get(m.getKey())) || s>Integer.parseInt(db.get(tableName).getColNameMax().get(m.getKey())))
-                    throw new InvalidDataTypeException("Boundary error");
+                    throw new DBAppException("Boundary error");
             }
             else if(((Object)m.getValue()).getClass().getName().equals("java.util.Date")){
                 String min = db.get(tableName).getColNameMin().get(m.getKey());
@@ -275,10 +275,10 @@ public class DBApp implements DBAppInterface{
 
                 Date s = (Date)m.getValue();
                 if(s.compareTo(date1)<0 || s.compareTo(date2)>0)
-                    throw new InvalidDataTypeException("Boundary error");
+                    throw new DBAppException("Boundary error");
             }
             else{
-                throw new InvalidDataTypeException("Invalid input");
+                throw new DBAppException("Invalid input");
             }
 
         }
@@ -315,7 +315,7 @@ public class DBApp implements DBAppInterface{
 
 //        for(Map.Entry m: colNameValue.entrySet()){
 //            if(m.getValue() instanceof (Object)(this.db.get(tableName).getColNameType().get(m.getKey())))
-//                throw new tableMismatchException("Column mismatch");
+//                throw new DBAppException("Column mismatch");
 //        }
 
     }

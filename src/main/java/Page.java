@@ -10,7 +10,7 @@ public class Page implements Serializable {
     private Vector clusteringKey;
     private Vector tuples;
     private String table;
-    private Transient min;
+    private Transient  min;
     private Transient max;
     private static int maxPage;
 
@@ -25,7 +25,7 @@ public class Page implements Serializable {
     }
 
     public void setMin(Object min) {
-        this.min = min;
+        this.min = (Transient) min;
     }
 
     public Object getMax() {
@@ -33,7 +33,7 @@ public class Page implements Serializable {
     }
 
     public void setMax(Object max) {
-        this.max = max;
+        this.max = (Transient) max;
     }
 
     public int getNoRows() {

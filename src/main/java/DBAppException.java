@@ -1,4 +1,4 @@
-public abstract class DBAppException extends Exception{
+public class DBAppException extends Exception{
     public DBAppException(){
         super();
     }

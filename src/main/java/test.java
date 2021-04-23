@@ -1,7 +1,10 @@
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Hashtable;
+import java.util.Vector;
 
 public class test {
     public static void main(String[] args) throws IOException, DBAppException {
@@ -21,21 +24,29 @@ public class test {
 //        htblColNameMax.put("gpa", "999.999");
 //        x.createTable( "test", "id", htblColNameType,htblColNameMin,htblColNameMax );
 
+        Hashtable h1 = new Hashtable( );
+        h1.put("id", new Integer( 2343432 ));
+        h1.put("name", new String("Ahmed Noor" ) );
+        h1.put("gpa", new Double( 0.95 ) );
+        Hashtable h2 = new Hashtable( );
+        h2.put("id", new Integer( 88 ));
+        h2.put("name", new String("afdgsgsag" ) );
+        h2.put("gpa", new Double( 5 ) );
+        Hashtable h3 = new Hashtable( );
+        h3.put("id", new Integer( 1 ));
+        h3.put("name", new String("afdghfghjfgjfsgsag" ) );
+        h3.put("gpa", new Double( 99 ) );
+
+        Vector <Hashtable> tuples = new Vector<>();
+        tuples.add(h1);
+        tuples.add(h2);
+        tuples.add(h3);
+        
+        System.out.println(tuples.toString());
 
 
 
 
-//        x.createTable("CityShop","ID",);
-
-
-
-
-//        FileWriter fr = new FileWriter("./data/metadata.csv",true);
-//        BufferedWriter br2 = new BufferedWriter(fr);
-//        String d = "a1231,346356,dfgdh,asda,fgdf,dfgdg,asda \n";
-//        br2.write(d);
-//        br2.close();
-//        fr.close();
 
     }
 }
