@@ -26,23 +26,47 @@ public class test {
 
         Hashtable h1 = new Hashtable( );
         h1.put("id", new Integer( 2343432 ));
-        h1.put("name", new String("Ahmed Noor" ) );
-        h1.put("gpa", new Double( 0.95 ) );
+//        h1.put("name", new String("Ahmed Noor" ) );
+//        h1.put("gpa", new Double( 0.95 ) );
         Hashtable h2 = new Hashtable( );
         h2.put("id", new Integer( 88 ));
-        h2.put("name", new String("afdgsgsag" ) );
-        h2.put("gpa", new Double( 5 ) );
+//        h2.put("name", new String("afdgsgsag" ) );
+//        h2.put("gpa", new Double( 5 ) );
         Hashtable h3 = new Hashtable( );
         h3.put("id", new Integer( 1 ));
-        h3.put("name", new String("afdghfghjfgjfsgsag" ) );
-        h3.put("gpa", new Double( 99 ) );
+//        h3.put("name", new String("afdghfghjfgjfsgsag" ) );
+//        h3.put("gpa", new Double( 99 ) );
+        Hashtable h4 = new Hashtable( );
+        h4.put("id", new Integer( 34 ));
+        Hashtable h5 = new Hashtable( );
+        h5.put("id", new Integer( 842 ));
+        Hashtable h6 = new Hashtable( );
+        h6.put("id", new Integer( 54 ));
+        Hashtable h7 = new Hashtable( );
+        h7.put("id", new Integer( 3 ));
 
-        Vector <Hashtable> tuples = new Vector<>();
-        tuples.add(h1);
-        tuples.add(h2);
-        tuples.add(h3);
-        
-        System.out.println(tuples.toString());
+
+
+        Record r1 = new Record(h1,"id");
+        Record r2 = new Record(h2,"id");
+        Record r3 = new Record(h3,"id");
+        Record r4 = new Record(h4,"id");
+        Record r5 = new Record(h5,"id");
+        Record r6 = new Record(h6,"id");
+        Record r7 = new Record(h7,"id");
+
+        Page p = new Page("CityShop");
+        p.insertRecord(r1);
+        p.insertRecord(r2);
+        p.insertRecord(r3);
+        p.insertRecord(r4);
+        p.insertRecord(r5);
+        p.insertRecord(r6);
+        p.insertRecord(r7);
+
+        System.out.println(p.getTuples().toString());
+
+
 
 
 

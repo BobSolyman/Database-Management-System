@@ -293,17 +293,19 @@ public class DBApp implements DBAppInterface{
         if(curTable.getPages().size() == 0){
             try {
                 Page p = new Page(tableName);
-                p.getTuples().add(colNameValue);
+                Record r = new Record(colNameValue,(String) clusteringKey);
+                p.insertRecord(r);
                 p.getClusteringKey().add(curKey);
                 p.setMax(curKey);
                 p.setMin(curKey);
+                p.setNoRows(p.getTuples().size());
                 serializePage(p,tableName+"0");
                 curTable.getPages().add(p);
             }
             catch(IOException e){
                 e.printStackTrace();
             }
-        }
+        } // end of initializing the first page
 
 
 
