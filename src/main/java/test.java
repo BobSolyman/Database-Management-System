@@ -26,7 +26,7 @@ public class test {
 //        x.createTable( "test", "id", htblColNameType,htblColNameMin,htblColNameMax );
 
         Hashtable h1 = new Hashtable( );
-        h1.put("id", "5");
+        h1.put("id", "22");
         h1.put("name", new String("Ahmed Noor" ) );
         h1.put("gpa", new Double( 0.95 ) );
 //        Hashtable h2 = new Hashtable( );
@@ -65,9 +65,9 @@ public class test {
 //        p.insertRecord(r6);
 //        p.insertRecord(r7);
         x.insertIntoTable("test",h1);
-        x.insertIntoTable("test",h1);
-        //Page p=x.deSerializePage("test0");
-        System.out.println("ba".compareTo("bm"));
+        //x.insertIntoTable("test",h1);
+        Page p=x.deSerializePage("test0");
+        System.out.println(p.getTuples());
 //
 //        Vector a= new Vector();
 //        Vector b= new Vector();

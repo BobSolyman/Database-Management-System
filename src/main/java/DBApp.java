@@ -334,9 +334,12 @@ public class DBApp implements DBAppInterface{
                     //check if page has space
                     if(((Integer)curPage.get(4)).compareTo(maxTuples)<0){
                     //value in the middle
-                    if(((Integer)max).compareTo((Integer)curKey)>0 && (((Integer)min).compareTo((Integer)curKey))<0){
+                    if(((Integer)max).compareTo((Integer)curKey)>=0 && (((Integer)min).compareTo((Integer)curKey))<=0){
                             p = deSerializePage((String) curPage.get(0));
                             Record r = new Record(colNameValue,(String) clusteringKey);
+                            if(p.getTuples().contains(r)){
+                                throw new DBAppException("Clustering Key already exists in table");
+                            }
                             p.insertRecord(r);
                             serializePage(p,(String) curPage.get(0));
                             updateLocation((String) curPage.get(0),p);
@@ -366,9 +369,12 @@ public class DBApp implements DBAppInterface{
                     //check if page has space
                     if(((Integer)curPage.get(4)).compareTo(maxTuples)<0){
                         //value in the middle
-                        if(((Double)max).compareTo((Double)curKey)>0 && (((Double)min).compareTo((Double)curKey))<0){
+                        if(((Double)max).compareTo((Double)curKey)>=0 && (((Double)min).compareTo((Double)curKey))<=0){
                             p = deSerializePage((String) curPage.get(0));
                             Record r = new Record(colNameValue,(String) clusteringKey);
+                            if(p.getTuples().contains(r)){
+                                throw new DBAppException("Clustering Key already exists in table");
+                            }
                             p.insertRecord(r);
                             serializePage(p,(String) curPage.get(0));
                             updateLocation((String) curPage.get(0),p);
@@ -398,9 +404,12 @@ public class DBApp implements DBAppInterface{
                     //check if page has space
                     if(((Integer)curPage.get(4)).compareTo(maxTuples)<0){
                         //value in the middle
-                        if(((String)max).compareTo((String)curKey)>0 && (((String)min).compareTo((String)curKey))<0){
+                        if(((String)max).compareTo((String)curKey)>=0 && (((String)min).compareTo((String)curKey))<=0){
                             p = deSerializePage((String) curPage.get(0));
                             Record r = new Record(colNameValue,(String) clusteringKey);
+                            if(p.getTuples().contains(r)){
+                                throw new DBAppException("Clustering Key already exists in table");
+                            }
                             p.insertRecord(r);
                             serializePage(p,(String) curPage.get(0));
                             updateLocation((String) curPage.get(0),p);
@@ -430,9 +439,12 @@ public class DBApp implements DBAppInterface{
                     //check if page has space
                     if(((Integer)curPage.get(4)).compareTo(maxTuples)<0){
                         //value in the middle
-                        if(((Date)max).compareTo((Date)curKey)>0 && (((Date)min).compareTo((Date)curKey))<0){
+                        if(((Date)max).compareTo((Date)curKey)>=0 && (((Date)min).compareTo((Date)curKey))<=0){
                             p = deSerializePage((String) curPage.get(0));
                             Record r = new Record(colNameValue,(String) clusteringKey);
+                            if(p.getTuples().contains(r)){
+                                throw new DBAppException("Clustering Key already exists in table");
+                            }
                             p.insertRecord(r);
                             serializePage(p,(String) curPage.get(0));
                             updateLocation((String) curPage.get(0),p);

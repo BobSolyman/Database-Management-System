@@ -21,7 +21,7 @@ public class Page implements Serializable {
     }
 
 
-    public void insertRecord (Record r){ // this inserts in the right place
+    public void insertRecord (Record r) throws DBAppException { // this inserts in the right place
         if (this.tuples.size()==0)
             this.tuples.add(r);
        else {
@@ -59,7 +59,7 @@ public class Page implements Serializable {
 
            }
            else {
-               System.out.println("Something went wrong in insertion");
+               throw new DBAppException("Tuple Already Exists");
            }
 
 
