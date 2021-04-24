@@ -264,8 +264,7 @@ public class DBApp implements DBAppInterface{
         if(db.get(tableName).getColNameType().size()!=colNameValue.size())
             throw new DBAppException("Sizes of columns are incompatible");
 
-<<<<<<< Updated upstream
-=======
+
         for(Map.Entry m: colNameValue.entrySet()){
             String entryType = (String) db.get(tableName).getColNameType().get(m.getKey());
             if(entryType.equals("java.lang.Integer")){
@@ -326,7 +325,7 @@ public class DBApp implements DBAppInterface{
                 throw new DBAppException("Type mismatch");
             }
         }
->>>>>>> Stashed changes
+
         //
 //        for(Map.Entry m: colNameValue.entrySet()){
 //            if(!((Object)m.getValue()).getClass().getName().equals(db.get(tableName).getColNameType().get(m.getKey()))){
