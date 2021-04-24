@@ -11,7 +11,7 @@ public class Page implements Serializable {
     private Vector <Record>tuples;
     private String table;
     private Object  min;
-    private Object max;
+    private Object  max;
     private static int maxPage;
 
     public Page(String table) throws IOException {
@@ -21,7 +21,7 @@ public class Page implements Serializable {
     }
 
 
-    public void insertRecord (Record r){ // this inserts in the right place
+    public void insertRecord (Record r) throws DBAppException { // this inserts in the right place
         if (this.tuples.size()==0)
             this.tuples.add(r);
        else {
@@ -59,7 +59,7 @@ public class Page implements Serializable {
 
            }
            else {
-               System.out.println("Something went wrong in insertion");
+               throw new DBAppException("Tuple Already Exists");
            }
 
 
@@ -120,7 +120,7 @@ public class Page implements Serializable {
 
     public void setTable(String table) { this.table = table; }
 
-    public int readingFromConfigFile(String string) throws IOException {
+    public static int readingFromConfigFile(String string) throws IOException {
         Properties prop = new Properties();
         FileInputStream property = new FileInputStream("src/main/resources/DBApp.config");
         prop.load(property);
