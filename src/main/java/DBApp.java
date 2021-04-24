@@ -264,6 +264,66 @@ public class DBApp implements DBAppInterface{
         if(db.get(tableName).getColNameType().size()!=colNameValue.size())
             throw new DBAppException("Sizes of columns are incompatible");
 
+        for(Map.Entry m: colNameValue.entrySet()){
+            String entryType = db.get(tableName).getColNameType().get(m.getKey());
+            if(entryType.equals("java.lang.Integer")){
+                boolean bound = false;
+                try {
+                    int currentValue = Integer.parseInt((String)m.getValue());
+                    int currentMin = Integer.parseInt(db.get(tableName).getColNameMin().get(m.getKey()));
+                    int currentMax = Integer.parseInt(db.get(tableName).getColNameMax().get(m.getKey()));
+                    if(currentValue>=currentMin && currentValue<=currentMax)
+                        bound = true;
+                }
+                catch (Exception e){
+                    throw new DBAppException("Type mismatch: supposed to be an Integer.");
+                }
+                if(!bound)
+                    throw new DBAppException("Column value out of bounds");
+            }
+            else if(entryType.equals("java.lang.Double")){
+                boolean bound = false;
+                try {
+                    double currentValue = (double)m.getValue();
+                    double currentMin = Double.parseDouble(db.get(tableName).getColNameMin().get(m.getKey()));
+                    double currentMax = Double.parseDouble(db.get(tableName).getColNameMax().get(m.getKey()));
+                    if(currentValue>=currentMin && currentValue<=currentMax)
+                        bound = true;
+                }
+                catch (Exception e){
+                    throw new DBAppException("Type mismatch: supposed to be a Double.");
+                }
+                if(!bound)
+                    throw new DBAppException("Column value out of bounds");
+            }
+            else if(entryType.equals("java.util.Date")){
+                try {
+                    Date currentValue = new SimpleDateFormat("yyyy-MM-dd").parse((String)m.getValue());
+                }
+                catch (Exception e){
+                    throw new DBAppException("Type mismatch: supposed to be a Date.");
+                }
+            }
+            else if(entryType.equals("java.lang.String")){
+                boolean bound = false;
+                try {
+                    String currentValue = (String)m.getValue();
+                    String currentMin = db.get(tableName).getColNameMin().get(m.getKey());
+                    String currentMax = db.get(tableName).getColNameMax().get(m.getKey());
+                    System.out.println(currentMin+"----"+currentMax);
+                    if(currentValue.compareToIgnoreCase(currentMin)>=0 && currentValue.compareToIgnoreCase(currentMax)<=0)
+                        bound = true;
+                }
+                catch (Exception e){
+                    throw new DBAppException("Type mismatch: supposed to be a String.");
+                }
+                if(!bound)
+                    throw new DBAppException("Column value out of bounds");
+            }
+            else {
+                throw new DBAppException("Type mismatch");
+            }
+        }
         //
 //        for(Map.Entry m: colNameValue.entrySet()){
 //            if(!((Object)m.getValue()).getClass().getName().equals(db.get(tableName).getColNameType().get(m.getKey()))){

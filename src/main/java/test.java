@@ -26,6 +26,8 @@ public class test {
 //        x.createTable( "test", "id", htblColNameType,htblColNameMin,htblColNameMax );
 
         Hashtable h1 = new Hashtable( );
+        h1.put("id", "5");
+        h1.put("name", new String("ale2" ) );
         h1.put("id", "22");
         h1.put("name", new String("Ahmed Noor" ) );
         h1.put("gpa", new Double( 0.95 ) );
