@@ -7,8 +7,16 @@ import java.util.*;
 
 public class DBApp implements DBAppInterface{
 
-    private HashMap<String,DBTable> db= new HashMap();
+     private HashMap<String,DBTable> db= new HashMap();
+     private int maxTuples;
 
+    {
+        try {
+            maxTuples = Page.readingFromConfigFile("MaximumRowsCountinPage");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     //We init a DB by giving ColNameType hashtable ex put.("ID",INT) ; put.("Name",String);
     //Max and Min are handled by giving type +MAX/MIN ex Min.put("ID", "0"); Max.put("ID","1");
@@ -26,10 +34,10 @@ public class DBApp implements DBAppInterface{
         //we need to translate metadata into map (review)
         HashMap<String,DBTable>  map;
         try {
-            if(getFileSize()>0){
+            if(getFileSize("src/main/resources/metadata.csv")>0){
             db = getMap("src/main/resources/metadata.csv");
 //            db.get("CityShop").displayAttributes();
-            db.get("test").displayAttributes();
+            //db.get("test").displayAttributes();
             } else {
                 FileWriter fr = new FileWriter("src/main/resources/metadata.csv");
                 BufferedWriter br2 = new BufferedWriter(fr);
@@ -37,7 +45,17 @@ public class DBApp implements DBAppInterface{
                 br2.write(d);
                 br2.close();
                 fr.close();
-               System.out.println("gowa el else");
+//               System.out.println("gowa el else");
+            }
+            if(getFileSize("src/main/resources/pageLocations.csv")>0){
+                readLocation();
+            }else{
+                FileWriter fr = new FileWriter("src/main/resources/pageLocations.csv");
+                BufferedWriter br2 = new BufferedWriter(fr);
+                String d = "Location, max, min, tableName, size"+"\n";
+                br2.write(d);
+                br2.close();
+                fr.close();
             }
 
         } catch (IOException i) {
@@ -50,10 +68,10 @@ public class DBApp implements DBAppInterface{
 
     }
 
-    public static int getFileSize() throws IOException {
+    public static int getFileSize(String file) throws IOException {
        int i= 0;
         try{
-            FileReader fr = new FileReader("src/main/resources/metadata.csv");
+            FileReader fr = new FileReader(file);
             BufferedReader br = new BufferedReader(fr);
             while (br.readLine() != null){
                 i++;
@@ -299,12 +317,163 @@ public class DBApp implements DBAppInterface{
                 p.insertRecord(r);
                 serializePage(p,tableName+"0");
                 updateLocation(tableName+"0",p);
-                System.out.println(curTable.getPages());
+                //System.out.println(curTable.getPages());
             }
             catch(IOException e){
                 e.printStackTrace();
             }
-        } // end of initializing the first page
+        }
+        else{
+            //LOOP AND CHECK TYPE AND LOCATION THEN INSERT AND RETURN, IF NO LOOP ENDED WITHOUT RETURNING THEN NEW PAGE
+            for (int i = 0; i < curTable.getPages().size(); i++) {
+                Vector curPage= ((Vector)curTable.getPages().get(i));
+                Object max= curPage.get(1);
+                Object min= curPage.get(2);
+                Page p = null;
+                if(max instanceof Integer){
+                    //check if page has space
+                    if(((Integer)curPage.get(4)).compareTo(maxTuples)<0){
+                    //value in the middle
+                    if(((Integer)max).compareTo((Integer)curKey)>0 && (((Integer)min).compareTo((Integer)curKey))<0){
+                            p = deSerializePage((String) curPage.get(0));
+                            Record r = new Record(colNameValue,(String) clusteringKey);
+                            p.insertRecord(r);
+                            serializePage(p,(String) curPage.get(0));
+                            updateLocation((String) curPage.get(0),p);
+                            return;
+                    //value is new max
+                    }else  if(((Integer)max).compareTo((Integer)curKey)<0 ){
+                        p= deSerializePage((String) curPage.get(0));
+                        p.setMax(curKey);
+                        Record r = new Record(colNameValue,(String) clusteringKey);
+                        p.insertRecord(r);
+                        serializePage(p,(String) curPage.get(0));
+                        updateLocation((String) curPage.get(0),p);
+                        return;
+                     //value is new min
+                    }else if((((Integer)min).compareTo((Integer)curKey))>0){
+                        p= deSerializePage((String) curPage.get(0));
+                        p.setMin(curKey);
+                        Record r = new Record(colNameValue,(String) clusteringKey);
+                        p.insertRecord(r);
+                        serializePage(p,(String) curPage.get(0));
+                        updateLocation((String) curPage.get(0),p);
+                        return;
+                    }
+                    }
+                }
+                if(max instanceof Double){
+                    //check if page has space
+                    if(((Integer)curPage.get(4)).compareTo(maxTuples)<0){
+                        //value in the middle
+                        if(((Double)max).compareTo((Double)curKey)>0 && (((Double)min).compareTo((Double)curKey))<0){
+                            p = deSerializePage((String) curPage.get(0));
+                            Record r = new Record(colNameValue,(String) clusteringKey);
+                            p.insertRecord(r);
+                            serializePage(p,(String) curPage.get(0));
+                            updateLocation((String) curPage.get(0),p);
+                            return;
+                            //value is new max
+                        }else  if(((Double)max).compareTo((Double)curKey)<0 ){
+                            p= deSerializePage((String) curPage.get(0));
+                            p.setMax(curKey);
+                            Record r = new Record(colNameValue,(String) clusteringKey);
+                            p.insertRecord(r);
+                            serializePage(p,(String) curPage.get(0));
+                            updateLocation((String) curPage.get(0),p);
+                            return;
+                            //value is new min
+                        }else if((((Double)min).compareTo((Double)curKey))>0){
+                            p= deSerializePage((String) curPage.get(0));
+                            p.setMin(curKey);
+                            Record r = new Record(colNameValue,(String) clusteringKey);
+                            p.insertRecord(r);
+                            serializePage(p,(String) curPage.get(0));
+                            updateLocation((String) curPage.get(0),p);
+                            return;
+                        }
+                    }
+                }
+                if(max instanceof String){
+                    //check if page has space
+                    if(((Integer)curPage.get(4)).compareTo(maxTuples)<0){
+                        //value in the middle
+                        if(((String)max).compareTo((String)curKey)>0 && (((String)min).compareTo((String)curKey))<0){
+                            p = deSerializePage((String) curPage.get(0));
+                            Record r = new Record(colNameValue,(String) clusteringKey);
+                            p.insertRecord(r);
+                            serializePage(p,(String) curPage.get(0));
+                            updateLocation((String) curPage.get(0),p);
+                            return;
+                            //value is new max
+                        }else  if(((String)max).compareTo((String)curKey)<0 ){
+                            p= deSerializePage((String) curPage.get(0));
+                            p.setMax(curKey);
+                            Record r = new Record(colNameValue,(String) clusteringKey);
+                            p.insertRecord(r);
+                            serializePage(p,(String) curPage.get(0));
+                            updateLocation((String) curPage.get(0),p);
+                            return;
+                            //value is new min
+                        }else if((((String)min).compareTo((String)curKey))>0){
+                            p= deSerializePage((String) curPage.get(0));
+                            p.setMin(curKey);
+                            Record r = new Record(colNameValue,(String) clusteringKey);
+                            p.insertRecord(r);
+                            serializePage(p,(String) curPage.get(0));
+                            updateLocation((String) curPage.get(0),p);
+                            return;
+                        }
+                    }
+                }
+                if(max instanceof Date){
+                    //check if page has space
+                    if(((Integer)curPage.get(4)).compareTo(maxTuples)<0){
+                        //value in the middle
+                        if(((Date)max).compareTo((Date)curKey)>0 && (((Date)min).compareTo((Date)curKey))<0){
+                            p = deSerializePage((String) curPage.get(0));
+                            Record r = new Record(colNameValue,(String) clusteringKey);
+                            p.insertRecord(r);
+                            serializePage(p,(String) curPage.get(0));
+                            updateLocation((String) curPage.get(0),p);
+                            return;
+                            //value is new max
+                        }else  if(((Date)max).compareTo((Date)curKey)<0 ){
+                            p= deSerializePage((String) curPage.get(0));
+                            p.setMax(curKey);
+                            Record r = new Record(colNameValue,(String) clusteringKey);
+                            p.insertRecord(r);
+                            serializePage(p,(String) curPage.get(0));
+                            updateLocation((String) curPage.get(0),p);
+                            return;
+                            //value is new min
+                        }else if((((Date)min).compareTo((Date)curKey))>0){
+                            p= deSerializePage((String) curPage.get(0));
+                            p.setMin(curKey);
+                            Record r = new Record(colNameValue,(String) clusteringKey);
+                            p.insertRecord(r);
+                            serializePage(p,(String) curPage.get(0));
+                            updateLocation((String) curPage.get(0),p);
+                            return;
+                        }
+                    }
+                }
+            }
+            //PAGES FULL CREATE A NEW ONE
+            try {
+                Page p = new Page(tableName);
+                p.setMax(curKey);
+                p.setMin(curKey);
+                Record r = new Record(colNameValue,(String) clusteringKey);
+                p.insertRecord(r);
+                serializePage(p,tableName+curTable.getPages().size());
+                updateLocation(tableName+curTable.getPages().size(),p);
+                //System.out.println(curTable.getPages());
+            }
+            catch(IOException e){
+                e.printStackTrace();
+            }
+        }
 
 
 
@@ -398,22 +567,23 @@ public class DBApp implements DBAppInterface{
 
     //Method to update Page location
     public void updateLocation(String location,Page page){
+        //Get Table
+        DBTable curTable= db.get(page.getTable());
         try {
             FileWriter fr = new FileWriter("src/main/resources/pageLocations.csv", true);
             BufferedWriter br = new BufferedWriter(fr);
-            br.write(location+","+page.getMax()+","+page.getMin()+"\n");
+            br.write(location+","+page.getMax()+","+page.getMin()+","+ curTable.getName()+","+page.getTuples().size()+"\n");
             br.close();
             fr.close();
 
             //update vector table in DBTable
             //construct my tuple
-            Vector<String> pageInfo= new Vector();
+            Vector pageInfo= new Vector();
             pageInfo.add(location);
-            pageInfo.add((String) page.getMax());
-            pageInfo.add((String) page.getMin());
-
-            //Get Table
-            DBTable curTable= db.get(page.getTable());
+            pageInfo.add(page.getMax());
+            pageInfo.add(page.getMin());
+            pageInfo.add(curTable.getName());
+            pageInfo.add(page.getTuples().size());
 
             //check if it exists
             if(curTable.getPages().contains(pageInfo)){
@@ -424,11 +594,42 @@ public class DBApp implements DBAppInterface{
                 //if it doesn't already exist add it
                 curTable.getPages().add(pageInfo);
             }
+
         }
         catch(IOException ex){
             ex.printStackTrace();
         }
     }
+
+    public  void readLocation() throws IOException {
+        FileReader fr = new FileReader("src/main/resources/pageLocations.csv");
+        BufferedReader br = new BufferedReader(fr);
+        String CurrentLine = "";
+        br.readLine();
+
+        while((CurrentLine=br.readLine())!=null){
+            String[] line = CurrentLine.split(",");
+            String location = line[0].trim();
+            Object max = (line[1].trim());
+            Object min = (line[2].trim());
+            String tableName = line[3].trim();
+            int size= Integer.parseInt(line[4].trim());
+
+            //construct the vector
+            Vector pageInfo= new Vector();
+            pageInfo.add(location);
+            pageInfo.add(max);
+            pageInfo.add(min);
+            pageInfo.add(tableName);
+            pageInfo.add(size);
+
+            //add it to proper table
+            db.get(tableName).getPages().add(pageInfo);
+        }
+    }
+
+
+
 
 
 

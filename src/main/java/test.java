@@ -65,8 +65,9 @@ public class test {
 //        p.insertRecord(r6);
 //        p.insertRecord(r7);
         x.insertIntoTable("test",h1);
-//        Page p=x.deSerializePage("test0");
-//        System.out.println(p.getTuples().toString());
+        x.insertIntoTable("test",h1);
+        //Page p=x.deSerializePage("test0");
+        System.out.println("ba".compareTo("bm"));
 //
 //        Vector a= new Vector();
 //        Vector b= new Vector();
@@ -76,7 +77,7 @@ public class test {
 //        b.add("22");
 //        Vector c= new Vector();
 //        c.add(a);
-//        System.out.println(c.contains(b));
+       // System.out.println("B".compareTo("A"));
 
 
 

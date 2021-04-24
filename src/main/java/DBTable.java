@@ -1,11 +1,12 @@
 import java.io.Serializable;
+import java.lang.reflect.Type;
 import java.util.Hashtable;
 import java.util.Set;
 import java.util.Vector;
 
-public class DBTable implements Serializable {
-    //contains pages within this table in form [location,upperBound,LowerBound]
-    private Vector<Vector<String>> pages;
+public class DBTable<T extends Comparable <T>> implements Serializable {
+    //contains pages within this table in form [location,upperBound,LowerBound,TableName,NoTuples]
+    private Vector<Vector<T>> pages;
     private String name;
     private String clusteringKey;
     private Vector tuples;
@@ -19,7 +20,7 @@ public class DBTable implements Serializable {
         this.name = name;
         this.clusteringKey=clusteringKey;
         this.colNameType = colNameType;
-        this.pages = new Vector<Vector<String>>();
+        this.pages = new Vector<>();
     }
 
     public void addColumn(String name, String type, String min, String max){
@@ -37,9 +38,13 @@ public class DBTable implements Serializable {
         }
     }
 
-    public Vector<Vector<String>> getPages() { return pages; }
+    public Vector<Vector<T>> getPages() {
+        return pages;
+    }
 
-    public void setPages(Vector<Vector<String>> pages) { this.pages = pages; }
+    public void setPages(Vector<Vector<T>> pages) {
+        this.pages = pages;
+    }
 
     public void setName(String name) {
         this.name = name;
