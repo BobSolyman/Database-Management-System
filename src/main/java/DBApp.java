@@ -354,66 +354,6 @@ public class DBApp implements DBAppInterface{
         if(clusteringKeyValue==null)
             throw new DBAppException("NO PRIMARY KEY SELECTED!!!");
 
-        //check clustering key value matches type and range
-        String clusteringKey = db.get(tableName).getClusteringKey();
-        String clusteringKeyType = (String) db.get(tableName).getColNameType().get(clusteringKey);
-        String clusteringKeyMin = (String) db.get(tableName).getColNameMin().get(clusteringKey);
-        String clusteringKeyMax = (String) db.get(tableName).getColNameMax().get(clusteringKey);
-        if(clusteringKeyType.equals("java.lang.Integer")){
-            boolean bound = false;
-            try {
-                if(Integer.parseInt(clusteringKeyValue)>=Integer.parseInt(clusteringKeyMin) && Integer.parseInt(clusteringKeyValue)<=Integer.parseInt(clusteringKeyMax))
-                    bound = true;
-            }
-            catch (Exception e){
-                throw new DBAppException("Type mismatch: supposed to be an Integer.");
-            }
-            if(!bound)
-                throw new DBAppException("Column value out of bounds");
-        }
-        else if(clusteringKeyType.equals("java.lang.Double")){
-            boolean bound = false;
-            try {
-                if(Double.parseDouble(clusteringKeyValue)>=Double.parseDouble(clusteringKeyMin) && Double.parseDouble(clusteringKeyValue)<=Double.parseDouble(clusteringKeyMax))
-                    bound = true;
-            }
-            catch (Exception e){
-                throw new DBAppException("Type mismatch: supposed to be a Double.");
-            }
-            if(!bound)
-                throw new DBAppException("Column value out of bounds");
-        }
-        else if(clusteringKeyType.equals("java.util.Date")){
-            boolean bound = false;
-            try {
-                Date currentValue = new SimpleDateFormat("yyyy-MM-dd").parse((String)clusteringKeyValue);
-                Date currentMin = new SimpleDateFormat("yyyy-MM-dd").parse((String)clusteringKeyMin);
-                Date currentMax = new SimpleDateFormat("yyyy-MM-dd").parse((String)clusteringKeyMax);
-                if(currentValue.compareTo(currentMin)>=0 && currentValue.compareTo(currentMax)<=0)
-                    bound = true;
-            }
-            catch (Exception e){
-                throw new DBAppException("Type mismatch: supposed to be a Date.");
-            }
-            if(!bound)
-                throw new DBAppException("Column value out of bounds");
-        }
-        else if(clusteringKeyType.equals("java.lang.String")){
-            boolean bound = false;
-            try {
-                if(clusteringKeyValue.compareToIgnoreCase(clusteringKeyMin)>=0 && clusteringKeyValue.compareToIgnoreCase(clusteringKeyMax)<=0)
-                    bound = true;
-            }
-            catch (Exception e){
-                throw new DBAppException("Type mismatch: supposed to be a String.");
-            }
-            if(!bound)
-                throw new DBAppException("Column value out of bounds");
-        }
-        else {
-            throw new DBAppException("Type mismatch");
-        }
-
         //Check if all columns exist
         Set <String> keys =columnNameValue.keySet();
         for(String key: keys) {
@@ -422,11 +362,8 @@ public class DBApp implements DBAppInterface{
             }
         }
 
-        //Check if no of columns matches table
-        if(db.get(tableName).getColNameType().size()!=columnNameValue.size()+1)
-            throw new DBAppException("Sizes of columns are incompatible");
-
         //check every value is in the correct type and in range
+        columnNameValue.put(db.get(tableName).getClusteringKey(),(Object)clusteringKeyValue);
         for(Map.Entry m: columnNameValue.entrySet()){
             String entryType = (String) db.get(tableName).getColNameType().get(m.getKey());
             if(entryType.equals("java.lang.Integer")){
@@ -498,7 +435,28 @@ public class DBApp implements DBAppInterface{
         if(db.get(tableName).getPages().size() == 0){
             throw new DBAppException("TABLE IS EMPTY");
         }
-        
+        //check if record clustering key exists
+        Record r = new Record(columnNameValue,(String) db.get(tableName).getClusteringKey());
+        int indexP = db.get(tableName).searchPage(r);
+        Vector curPage = ((Vector)db.get(tableName).getPages().get(indexP));
+        Page p = deSerializePage((String)curPage.get(0));
+        int[] indexR = p.searchRecord(r);
+        if (indexR[1]==0){
+            throw new DBAppException("Clustering Key not found");
+        }
+        else {
+            Vector<Pair> oldV = ((Record) p.getTuples().get(indexR[0])).getData();
+            //update every Pair's value
+            for (int i = 0; i < oldV.size(); i++) {
+                if (columnNameValue.containsKey(oldV.get(i).getKey())) {
+                    oldV.get(i).setValue(columnNameValue.get(oldV.get(i).getKey()));
+                }
+            }
+            ((Record) p.getTuples().get(indexR[0])).setData(oldV);
+            serializePage(p, tableName + indexP);
+            updateLocation(tableName + indexP, p, indexP);
+        }
+
     }
 
     public void deleteFromTable(String tableName, Hashtable<String, Object> columnNameValue) throws DBAppException {
