@@ -342,18 +342,163 @@ public class DBApp implements DBAppInterface{
     }
 
     public void updateTable(String tableName, String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException {
+        //checking if key already exists should be done when page is deSerialized
+        if(tableName==null)
+            throw new DBAppException("TABLE MUST HAVE A NAME!!!");
 
+        //Table name exists
+        if(!db.containsKey(tableName))
+            throw new DBAppException("TABLE NAME NOT FOUND!!!");
 
-    validate(tableName,columnNameValue);
-    //checking if key already exists should be done when page is deSerialized
+        //No primary key
+        if(clusteringKeyValue==null)
+            throw new DBAppException("NO PRIMARY KEY SELECTED!!!");
 
+        //check clustering key value matches type and range
+        String clusteringKey = db.get(tableName).getClusteringKey();
+        String clusteringKeyType = (String) db.get(tableName).getColNameType().get(clusteringKey);
+        String clusteringKeyMin = (String) db.get(tableName).getColNameMin().get(clusteringKey);
+        String clusteringKeyMax = (String) db.get(tableName).getColNameMax().get(clusteringKey);
+        if(clusteringKeyType.equals("java.lang.Integer")){
+            boolean bound = false;
+            try {
+                if(Integer.parseInt(clusteringKeyValue)>=Integer.parseInt(clusteringKeyMin) && Integer.parseInt(clusteringKeyValue)<=Integer.parseInt(clusteringKeyMax))
+                    bound = true;
+            }
+            catch (Exception e){
+                throw new DBAppException("Type mismatch: supposed to be an Integer.");
+            }
+            if(!bound)
+                throw new DBAppException("Column value out of bounds");
+        }
+        else if(clusteringKeyType.equals("java.lang.Double")){
+            boolean bound = false;
+            try {
+                if(Double.parseDouble(clusteringKeyValue)>=Double.parseDouble(clusteringKeyMin) && Double.parseDouble(clusteringKeyValue)<=Double.parseDouble(clusteringKeyMax))
+                    bound = true;
+            }
+            catch (Exception e){
+                throw new DBAppException("Type mismatch: supposed to be a Double.");
+            }
+            if(!bound)
+                throw new DBAppException("Column value out of bounds");
+        }
+        else if(clusteringKeyType.equals("java.util.Date")){
+            boolean bound = false;
+            try {
+                Date currentValue = new SimpleDateFormat("yyyy-MM-dd").parse((String)clusteringKeyValue);
+                Date currentMin = new SimpleDateFormat("yyyy-MM-dd").parse((String)clusteringKeyMin);
+                Date currentMax = new SimpleDateFormat("yyyy-MM-dd").parse((String)clusteringKeyMax);
+                if(currentValue.compareTo(currentMin)>=0 && currentValue.compareTo(currentMax)<=0)
+                    bound = true;
+            }
+            catch (Exception e){
+                throw new DBAppException("Type mismatch: supposed to be a Date.");
+            }
+            if(!bound)
+                throw new DBAppException("Column value out of bounds");
+        }
+        else if(clusteringKeyType.equals("java.lang.String")){
+            boolean bound = false;
+            try {
+                if(clusteringKeyValue.compareToIgnoreCase(clusteringKeyMin)>=0 && clusteringKeyValue.compareToIgnoreCase(clusteringKeyMax)<=0)
+                    bound = true;
+            }
+            catch (Exception e){
+                throw new DBAppException("Type mismatch: supposed to be a String.");
+            }
+            if(!bound)
+                throw new DBAppException("Column value out of bounds");
+        }
+        else {
+            throw new DBAppException("Type mismatch");
+        }
 
+        //Check if all columns exist
+        Set <String> keys =columnNameValue.keySet();
+        for(String key: keys) {
+            if (!db.get(tableName).getColNameType().containsKey(key)) {
+                throw new DBAppException("COLUMN NOT FOUND!!!");
+            }
+        }
 
+        //Check if no of columns matches table
+        if(db.get(tableName).getColNameType().size()!=columnNameValue.size()+1)
+            throw new DBAppException("Sizes of columns are incompatible");
 
+        //check every value is in the correct type and in range
+        for(Map.Entry m: columnNameValue.entrySet()){
+            String entryType = (String) db.get(tableName).getColNameType().get(m.getKey());
+            if(entryType.equals("java.lang.Integer")){
+                boolean bound = false;
+                try {
+                    int currentValue = ((Integer)m.getValue());
+                    int currentMin = Integer.parseInt((String) db.get(tableName).getColNameMin().get(m.getKey()));
+                    int currentMax = Integer.parseInt((String) db.get(tableName).getColNameMax().get(m.getKey()));
+                    if(currentValue>=currentMin && currentValue<=currentMax)
+                        bound = true;
+                }
+                catch (Exception e){
+                    throw new DBAppException("Type mismatch: supposed to be an Integer.");
+                }
+                if(!bound)
+                    throw new DBAppException("Column value out of bounds");
+            }
+            else if(entryType.equals("java.lang.Double")){
+                boolean bound = false;
+                try {
+                    double currentValue = (double)m.getValue();
+                    double currentMin = Double.parseDouble((String) db.get(tableName).getColNameMin().get(m.getKey()));
+                    double currentMax = Double.parseDouble((String) db.get(tableName).getColNameMax().get(m.getKey()));
+                    if(currentValue>=currentMin && currentValue<=currentMax)
+                        bound = true;
+                }
+                catch (Exception e){
+                    throw new DBAppException("Type mismatch: supposed to be a Double.");
+                }
+                if(!bound)
+                    throw new DBAppException("Column value out of bounds");
+            }
+            else if(entryType.equals("java.util.Date")){
+                boolean bound = false;
+                try {
+                    Date currentValue = new SimpleDateFormat("yyyy-MM-dd").parse((String)m.getValue());
+                    Date currentMin = (Date) db.get(tableName).getColNameMin().get(m.getKey());
+                    Date currentMax = (Date) db.get(tableName).getColNameMax().get(m.getKey());
+                    if(currentValue.compareTo(currentMin)>=0 && currentValue.compareTo(currentMax)<=0)
+                        bound = true;
+                }
+                catch (Exception e){
+                    throw new DBAppException("Type mismatch: supposed to be a Date.");
+                }
+                if(!bound)
+                    throw new DBAppException("Column value out of bounds");
+            }
+            else if(entryType.equals("java.lang.String")){
+                boolean bound = false;
+                try {
+                    String currentValue = (String)m.getValue();
+                    String currentMin = (String) db.get(tableName).getColNameMin().get(m.getKey());
+                    String currentMax = (String) db.get(tableName).getColNameMax().get(m.getKey());
+                    if(currentValue.compareToIgnoreCase(currentMin)>=0 && currentValue.compareToIgnoreCase(currentMax)<=0)
+                        bound = true;
+                }
+                catch (Exception e){
+                    throw new DBAppException("Type mismatch: supposed to be a String.");
+                }
+                if(!bound)
+                    throw new DBAppException("Column value out of bounds");
+            }
+            else {
+                throw new DBAppException("Type mismatch");
+            }
+        }
 
-
-
-
+        //Check if there are no pages in the table
+        if(db.get(tableName).getPages().size() == 0){
+            throw new DBAppException("TABLE IS EMPTY");
+        }
+        
     }
 
     public void deleteFromTable(String tableName, Hashtable<String, Object> columnNameValue) throws DBAppException {
