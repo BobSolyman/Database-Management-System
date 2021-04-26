@@ -2,3 +2,6 @@ Table Name, Column Name, Column Type, ClusteringKey, Indexed , min , max
 test,gpa,java.lang.Double,FALSE,FALSE,0,999.999
 test,name,java.lang.String,FALSE,FALSE,a,ZZZ
 test,id,java.lang.Integer,TRUE,FALSE,0,999
+table2,gpa,java.lang.Double,FALSE,FALSE,0,999.999
+table2,name,java.lang.String,FALSE,FALSE,a,ZZZ
+table2,id,java.lang.Integer,TRUE,FALSE,0,999

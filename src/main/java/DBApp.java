@@ -169,31 +169,8 @@ public class DBApp implements DBAppInterface{
 
 
     public void createTable(String tableName, String clusteringKey, Hashtable<String, String> colNameType, Hashtable<String, String> colNameMin, Hashtable<String, String> colNameMax) throws DBAppException {
-        boolean hasCluster=false;
-        //update the csv
 
-
-        if(clusteringKey==null)
-            throw new DBAppException("TABLE MUST HAVE A CLUSTERING KEY!!!");
-        if(tableName==null)
-            throw new DBAppException("TABLE MUST HAVE A NAME!!!");
-
-        for(Map.Entry m: colNameType.entrySet()){
-            if(!(m.getValue().equals("java.lang.Integer")) && !(m.getValue().equals("java.lang.String")) && !(m.getValue().equals("java.lang.Double")) && !(m.getValue().equals("java.util.Date")) ) {
-                throw new DBAppException(m.getValue()+ " IS NOT A VALID TYPE!!!");
-            }
-            if(m.getKey().equals(clusteringKey))
-                hasCluster=true;
-        }
-        if(!hasCluster)
-            throw new DBAppException("TABLE MUST HAVE A CLUSTERING KEY!!!");
-        if(colNameType.size()!=colNameMin.size() || colNameType.size()!=colNameMax.size() || colNameMin.size()!=colNameMax.size())
-            throw new DBAppException("Sizes of columns are incompatible");
-
-        for(Map.Entry m: colNameType.entrySet()){
-            if(!colNameMin.containsKey(m.getKey()) || !colNameMax.containsKey(m.getKey()))
-                throw new DBAppException("Table content mismatch");
-        }
+        validate(tableName,clusteringKey,colNameType,colNameMin,colNameMax);
 
         try{
             FileWriter fr = new FileWriter("src/main/resources/metadata.csv",true);
@@ -239,107 +216,8 @@ public class DBApp implements DBAppInterface{
     }
 
     public void insertIntoTable(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException, ParseException {
-        //init a page on first insert
-        // Object violating min/max constraints              5
 
-        // Object matches type                    4
-        // N constraint   to be read from the config
-
-         //Table name entered is null
-        if(tableName==null)
-            throw new DBAppException("TABLE MUST HAVE A NAME!!!");
-
-        //Table name doesn't exist
-        if(!db.containsKey(tableName))
-            throw new DBAppException("TABLE NAME NOT FOUND!!!");
-
-        //No primary key
-        if(!colNameValue.containsKey(db.get(tableName).getClusteringKey()) && colNameValue.get(db.get(tableName).getClusteringKey())!=null)
-            throw new DBAppException("NO PRIMARY KEY SELECTED!!!");
-
-        //Check if column doesn't exist
-        Set <String> keys =colNameValue.keySet();
-        for(String key: keys) {
-            if (!db.get(tableName).getColNameType().containsKey(key)) {
-                throw new DBAppException("COLUMN NOT FOUND!!!");
-            }
-        }
-
-        //Check if no of columns matches table
-        if(db.get(tableName).getColNameType().size()!=colNameValue.size())
-            throw new DBAppException("Sizes of columns are incompatible");
-
-
-        for(Map.Entry m: colNameValue.entrySet()){
-            String entryType = (String) db.get(tableName).getColNameType().get(m.getKey());
-            if(entryType.equals("java.lang.Integer")){
-                boolean bound = false;
-                try {
-                    int currentValue = ((Integer)m.getValue());
-                    int currentMin = Integer.parseInt((String) db.get(tableName).getColNameMin().get(m.getKey()));
-                    int currentMax = Integer.parseInt((String) db.get(tableName).getColNameMax().get(m.getKey()));
-                    if(currentValue>=currentMin && currentValue<=currentMax)
-                        bound = true;
-                }
-                catch (Exception e){
-                     throw new DBAppException("Type mismatch: supposed to be an Integer.");
-                }
-                if(!bound)
-                    throw new DBAppException("Column value out of bounds");
-            }
-            else if(entryType.equals("java.lang.Double")){
-                boolean bound = false;
-                try {
-                    double currentValue = (double)m.getValue();
-                    double currentMin = Double.parseDouble((String) db.get(tableName).getColNameMin().get(m.getKey()));
-                    double currentMax = Double.parseDouble((String) db.get(tableName).getColNameMax().get(m.getKey()));
-                    if(currentValue>=currentMin && currentValue<=currentMax)
-                        bound = true;
-                }
-                catch (Exception e){
-                    throw new DBAppException("Type mismatch: supposed to be a Double.");
-                }
-                if(!bound)
-                    throw new DBAppException("Column value out of bounds");
-            }
-            else if(entryType.equals("java.util.Date")){
-                boolean bound = false;
-                try {
-                    Date currentValue = new SimpleDateFormat("yyyy-MM-dd").parse((String)m.getValue());
-                    Date currentMin = (Date) db.get(tableName).getColNameMin().get(m.getKey());
-                    Date currentMax = (Date) db.get(tableName).getColNameMax().get(m.getKey());
-//                    System.out.println(currentMin+"----"+currentMax);
-                    if(currentValue.compareTo(currentMin)>=0 && currentValue.compareTo(currentMax)<=0)
-                        bound = true;
-
-                }
-                catch (Exception e){
-                    throw new DBAppException("Type mismatch: supposed to be a Date.");
-                }
-                if(!bound)
-                    throw new DBAppException("Column value out of bounds");
-            }
-            else if(entryType.equals("java.lang.String")){
-                boolean bound = false;
-                try {
-                    String currentValue = (String)m.getValue();
-                    String currentMin = (String) db.get(tableName).getColNameMin().get(m.getKey());
-                    String currentMax = (String) db.get(tableName).getColNameMax().get(m.getKey());
-//                    System.out.println(currentMin+"----"+currentMax);
-                    if(currentValue.compareToIgnoreCase(currentMin)>=0 && currentValue.compareToIgnoreCase(currentMax)<=0)
-                        bound = true;
-                }
-                catch (Exception e){
-                    throw new DBAppException("Type mismatch: supposed to be a String.");
-                }
-                if(!bound)
-                    throw new DBAppException("Column value out of bounds");
-            }
-            else {
-                throw new DBAppException("Type mismatch");
-            }
-        }
-
+        validate(tableName,colNameValue);
 
         //Get the table and find the clustering key
         DBTable curTable= db.get(tableName);
@@ -466,7 +344,8 @@ public class DBApp implements DBAppInterface{
     public void updateTable(String tableName, String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException {
 
 
-
+    validate(tableName,columnNameValue);
+    //checking if key already exists should be done when page is deSerialized
 
 
 
@@ -655,9 +534,128 @@ public class DBApp implements DBAppInterface{
     }
 
 
+public void validate(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException {
+    //Table name entered is null
+    if(tableName==null)
+        throw new DBAppException("TABLE MUST HAVE A NAME!!!");
+
+    //Table name doesn't exist
+    if(!db.containsKey(tableName))
+        throw new DBAppException("TABLE NAME NOT FOUND!!!");
+
+    //No primary key
+    if(!colNameValue.containsKey(db.get(tableName).getClusteringKey()) && colNameValue.get(db.get(tableName).getClusteringKey())!=null)
+        throw new DBAppException("NO PRIMARY KEY SELECTED!!!");
+
+    //Check if column doesn't exist
+    Set <String> keys =colNameValue.keySet();
+    for(String key: keys) {
+        if (!db.get(tableName).getColNameType().containsKey(key)) {
+            throw new DBAppException("COLUMN NOT FOUND!!!");
+        }
+    }
+
+    //Check if no of columns matches table
+    if(db.get(tableName).getColNameType().size()!=colNameValue.size())
+        throw new DBAppException("Sizes of columns are incompatible");
 
 
+    for(Map.Entry m: colNameValue.entrySet()){
+        String entryType = (String) db.get(tableName).getColNameType().get(m.getKey());
+        if(entryType.equals("java.lang.Integer")){
+            boolean bound = false;
+            try {
+                int currentValue = ((Integer)m.getValue());
+                int currentMin = Integer.parseInt((String) db.get(tableName).getColNameMin().get(m.getKey()));
+                int currentMax = Integer.parseInt((String) db.get(tableName).getColNameMax().get(m.getKey()));
+                if(currentValue>=currentMin && currentValue<=currentMax)
+                    bound = true;
+            }
+            catch (Exception e){
+                throw new DBAppException("Type mismatch: supposed to be an Integer.");
+            }
+            if(!bound)
+                throw new DBAppException("Column value out of bounds");
+        }
+        else if(entryType.equals("java.lang.Double")){
+            boolean bound = false;
+            try {
+                double currentValue = (double)m.getValue();
+                double currentMin = Double.parseDouble((String) db.get(tableName).getColNameMin().get(m.getKey()));
+                double currentMax = Double.parseDouble((String) db.get(tableName).getColNameMax().get(m.getKey()));
+                if(currentValue>=currentMin && currentValue<=currentMax)
+                    bound = true;
+            }
+            catch (Exception e){
+                throw new DBAppException("Type mismatch: supposed to be a Double.");
+            }
+            if(!bound)
+                throw new DBAppException("Column value out of bounds");
+        }
+        else if(entryType.equals("java.util.Date")){
+            boolean bound = false;
+            try {
+                Date currentValue = new SimpleDateFormat("yyyy-MM-dd").parse((String)m.getValue());
+                Date currentMin = (Date) db.get(tableName).getColNameMin().get(m.getKey());
+                Date currentMax = (Date) db.get(tableName).getColNameMax().get(m.getKey());
+//                    System.out.println(currentMin+"----"+currentMax);
+                if(currentValue.compareTo(currentMin)>=0 && currentValue.compareTo(currentMax)<=0)
+                    bound = true;
 
+            }
+            catch (Exception e){
+                throw new DBAppException("Type mismatch: supposed to be a Date.");
+            }
+            if(!bound)
+                throw new DBAppException("Column value out of bounds");
+        }
+        else if(entryType.equals("java.lang.String")){
+            boolean bound = false;
+            try {
+                String currentValue = (String)m.getValue();
+                String currentMin = (String) db.get(tableName).getColNameMin().get(m.getKey());
+                String currentMax = (String) db.get(tableName).getColNameMax().get(m.getKey());
+//                    System.out.println(currentMin+"----"+currentMax);
+                if(currentValue.compareToIgnoreCase(currentMin)>=0 && currentValue.compareToIgnoreCase(currentMax)<=0)
+                    bound = true;
+            }
+            catch (Exception e){
+                throw new DBAppException("Type mismatch: supposed to be a String.");
+            }
+            if(!bound)
+                throw new DBAppException("Column value out of bounds");
+        }
+        else {
+            throw new DBAppException("Type mismatch");
+        }
+    }
+}
+
+public void validate(String tableName, String clusteringKey, Hashtable<String, String> colNameType, Hashtable<String, String> colNameMin, Hashtable<String, String> colNameMax) throws DBAppException {
+    boolean hasCluster=false;
+
+    if(clusteringKey==null)
+        throw new DBAppException("TABLE MUST HAVE A CLUSTERING KEY!!!");
+    if(tableName==null)
+        throw new DBAppException("TABLE MUST HAVE A NAME!!!");
+
+    for(Map.Entry m: colNameType.entrySet()){
+        if(!(m.getValue().equals("java.lang.Integer")) && !(m.getValue().equals("java.lang.String")) && !(m.getValue().equals("java.lang.Double")) && !(m.getValue().equals("java.util.Date")) ) {
+            throw new DBAppException(m.getValue()+ " IS NOT A VALID TYPE!!!");
+        }
+        if(m.getKey().equals(clusteringKey))
+            hasCluster=true;
+    }
+    if(!hasCluster)
+        throw new DBAppException("TABLE MUST HAVE A CLUSTERING KEY!!!");
+    if(colNameType.size()!=colNameMin.size() || colNameType.size()!=colNameMax.size() || colNameMin.size()!=colNameMax.size())
+        throw new DBAppException("Sizes of columns are incompatible");
+
+    for(Map.Entry m: colNameType.entrySet()){
+        if(!colNameMin.containsKey(m.getKey()) || !colNameMax.containsKey(m.getKey()))
+            throw new DBAppException("Table content mismatch");
+    }
+}
 
 
    // update specific cell in csv MAYBE

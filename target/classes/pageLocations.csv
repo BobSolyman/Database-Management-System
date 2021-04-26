@@ -1,0 +1,4 @@
+Location, max, min, tableName, size
+test0,15,5,test,3
+test1,35,25,test,3
+test2,65,45,test,3

@@ -20,9 +20,8 @@ public class test {
         htblColNameMax.put("id", "999");
         htblColNameMax.put("name", "ZZZ");
         htblColNameMax.put("gpa", "999.999");
-//        x.createTable( "test", "id", htblColNameType,htblColNameMin,htblColNameMax );
-        x.getDb().get("test").getPages().clear();
-        DBTable table = x.getDb().get((String)"test");
+        //x.createTable( "table2", "id", htblColNameType,htblColNameMin,htblColNameMax );
+        DBTable table = x.getDb().get((String)"table2");
         Vector pages = table.getPages();
         System.out.println(pages);
 
@@ -68,7 +67,10 @@ public class test {
         h9.put("gpa", new Double( 6 ) );
 
 
-        x.insertIntoTable("test",h1);
+
+
+        //x.insertIntoTable("table2",h1);
+       // x.insertIntoTable("table2",h1);
 //        Vector curPage= ((Vector)table.getPages().get(0));
 //        Page p = null;
 //        p = x.deSerializePage((String)curPage.get(0));
@@ -78,7 +80,7 @@ public class test {
 //        System.out.println("Min is   "+p.getMin());
 //        System.out.println("Current number of pages =   "+table.getPages().size());
 
-        x.insertIntoTable("test",h2);
+        x.insertIntoTable("table2",h2);
 //        curPage= ((Vector)table.getPages().get(0));
 //        p = x.deSerializePage((String)curPage.get(0));
 //        System.out.println("Second Insertion");
@@ -88,7 +90,7 @@ public class test {
 //        System.out.println("Current number of pages =   "+table.getPages().size());
 
 
-        x.insertIntoTable("test",h3);
+        x.insertIntoTable("table2",h3);
 //        curPage= ((Vector)table.getPages().get(0));
 //        p = x.deSerializePage((String)curPage.get(0));
 //        System.out.println("Third Insertion");
@@ -98,7 +100,7 @@ public class test {
 //        System.out.println("Current number of pages =   "+table.getPages().size());
 
 
-        x.insertIntoTable("test",h4);
+        x.insertIntoTable("table2",h4);
 //        curPage= ((Vector)table.getPages().get(1));
 //        p = x.deSerializePage((String)curPage.get(0));
 //        System.out.println("Forth Insertion");
@@ -109,15 +111,15 @@ public class test {
 
 
 
-        x.insertIntoTable("test",h5);
-        x.insertIntoTable("test",h6);
-        x.insertIntoTable("test",h7);
-        x.insertIntoTable("test",h8);
-        x.insertIntoTable("test",h9);
+        x.insertIntoTable("table2",h5);
+        x.insertIntoTable("table2",h6);
+        x.insertIntoTable("table2",h7);
+        x.insertIntoTable("table2",h8);
+        x.insertIntoTable("table2",h9);
 
 
         System.out.println(x.getDb().get("test").getPages());
-
+        System.out.println(x.getDb().get("table2").getPages());
 
 
 
