@@ -62,46 +62,50 @@ public class test {
         h8.put("id", new Integer(11));
         h8.put("name", new String("eight" ) );
         h8.put("gpa", new Double( 6 ) );
+        Hashtable h9 = new Hashtable( );
+        h9.put("id", new Integer(30));
+        h9.put("name", new String("nine" ) );
+        h9.put("gpa", new Double( 6 ) );
 
 
         x.insertIntoTable("test",h1);
-        Vector curPage= ((Vector)table.getPages().get(0));
-        Page p = null;
-        p = x.deSerializePage((String)curPage.get(0));
-        System.out.println("First Insertion");
-        System.out.println(p.getTuples());
-        System.out.println("Max is   "+p.getMax());
-        System.out.println("Min is   "+p.getMin());
-        System.out.println("Current number of pages =   "+table.getPages().size());
+//        Vector curPage= ((Vector)table.getPages().get(0));
+//        Page p = null;
+//        p = x.deSerializePage((String)curPage.get(0));
+//        System.out.println("First Insertion");
+//        System.out.println(p.getTuples());
+//        System.out.println("Max is   "+p.getMax());
+//        System.out.println("Min is   "+p.getMin());
+//        System.out.println("Current number of pages =   "+table.getPages().size());
 
         x.insertIntoTable("test",h2);
-        curPage= ((Vector)table.getPages().get(0));
-        p = x.deSerializePage((String)curPage.get(0));
-        System.out.println("Second Insertion");
-        System.out.println(p.getTuples());
-        System.out.println("Max is   "+p.getMax());
-        System.out.println("Min is   "+p.getMin());
-        System.out.println("Current number of pages =   "+table.getPages().size());
+//        curPage= ((Vector)table.getPages().get(0));
+//        p = x.deSerializePage((String)curPage.get(0));
+//        System.out.println("Second Insertion");
+//        System.out.println(p.getTuples());
+//        System.out.println("Max is   "+p.getMax());
+//        System.out.println("Min is   "+p.getMin());
+//        System.out.println("Current number of pages =   "+table.getPages().size());
 
 
         x.insertIntoTable("test",h3);
-        curPage= ((Vector)table.getPages().get(0));
-        p = x.deSerializePage((String)curPage.get(0));
-        System.out.println("Third Insertion");
-        System.out.println(p.getTuples());
-        System.out.println("Max is   "+p.getMax());
-        System.out.println("Min is   "+p.getMin());
-        System.out.println("Current number of pages =   "+table.getPages().size());
+//        curPage= ((Vector)table.getPages().get(0));
+//        p = x.deSerializePage((String)curPage.get(0));
+//        System.out.println("Third Insertion");
+//        System.out.println(p.getTuples());
+//        System.out.println("Max is   "+p.getMax());
+//        System.out.println("Min is   "+p.getMin());
+//        System.out.println("Current number of pages =   "+table.getPages().size());
 
 
         x.insertIntoTable("test",h4);
-        curPage= ((Vector)table.getPages().get(1));
-        p = x.deSerializePage((String)curPage.get(0));
-        System.out.println("Forth Insertion");
-        System.out.println(p.getTuples());
-        System.out.println("Max is   "+p.getMax());
-        System.out.println("Min is   "+p.getMin());
-        System.out.println("Current number of pages =   "+table.getPages().size());
+//        curPage= ((Vector)table.getPages().get(1));
+//        p = x.deSerializePage((String)curPage.get(0));
+//        System.out.println("Forth Insertion");
+//        System.out.println(p.getTuples());
+//        System.out.println("Max is   "+p.getMax());
+//        System.out.println("Min is   "+p.getMin());
+//        System.out.println("Current number of pages =   "+table.getPages().size());
 
 
 
@@ -109,6 +113,8 @@ public class test {
         x.insertIntoTable("test",h6);
         x.insertIntoTable("test",h7);
         x.insertIntoTable("test",h8);
+        x.insertIntoTable("test",h9);
+
 
         System.out.println(x.getDb().get("test").getPages());
 

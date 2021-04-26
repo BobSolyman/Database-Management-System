@@ -60,6 +60,7 @@ public class DBApp implements DBAppInterface{
                 br2.write(d);
                 br2.close();
                 fr.close();
+
             }
 
         } catch (IOException i) {
@@ -367,7 +368,7 @@ public class DBApp implements DBAppInterface{
         else {
             Record r = new Record(colNameValue,(String) clusteringKey);
             int indexP = curTable.searchPage(r);
-            System.out.println("IndexP is  " +indexP);
+//            System.out.println("IndexP is  " +indexP);
             boolean flag = false ;
             Page p = null ;
             Record shifter = null ;
@@ -499,7 +500,7 @@ public class DBApp implements DBAppInterface{
             out.close();
             file.close();
 
-            System.out.println("Object has been serialized");
+//            System.out.println("Object has been serialized");
         }
 
         catch(IOException ex)
@@ -523,7 +524,7 @@ public class DBApp implements DBAppInterface{
             in.close();
             file.close();
 
-            System.out.println("Object has been deserialized ");
+//            System.out.println("Object has been deserialized ");
         }
 
         catch(IOException ex)
@@ -542,52 +543,62 @@ public class DBApp implements DBAppInterface{
         //Get Table
         DBTable curTable= db.get(page.getTable());
         try {
-            FileWriter fr = new FileWriter("src/main/resources/pageLocationsTemp.csv", true);
-            BufferedWriter bw = new BufferedWriter(fr);
-            FileWriter fr3 = new FileWriter("src/main/resources/pageLocations.csv", true);
-            BufferedWriter bw2 = new BufferedWriter(fr3);
-            FileReader fr2 = new FileReader("src/main/resources/pageLocations.csv");
-            BufferedReader br = new BufferedReader(fr2);
+            FileReader fr = new FileReader("src/main/resources/pageLocations.csv");
+            BufferedReader br = new BufferedReader(fr);
+
             String Current = "";
-            boolean flag = false ;
             Current= br.readLine();
-            bw.write("Location, max, min, tableName, size"+"\n");
+            String res = Current+"\n";
+
+
+
+            boolean flag = false ;
+            boolean flag2 = false;
             if ((Current = br.readLine())==null) {
-                bw2.write(location + "," + page.getMax() + "," + page.getMin() + "," + curTable.getName() + "," + page.getTuples().size() + "\n");
+                res = res +location + "," + page.getMax() + "," + page.getMin() + "," + curTable.getName() + "," + page.getTuples().size() + "\n";
+
                 flag = true ;
             }
 
-            while ((Current = br.readLine())!=null && !flag){
+            while ((Current)!=null && !flag){
                 String[] line = Current.split(",");
                 String loc = line[0].trim();
+
                 if (loc.equals(location)) {
-                    bw.write(location + "," + page.getMax() + "," + page.getMin() + "," + curTable.getName() + "," + page.getTuples().size() + "\n");
+                    res = res +location + "," + page.getMax() + "," + page.getMin() + "," + curTable.getName() + "," + page.getTuples().size() + "\n";
+                    flag2 = true ;
+
                 }
                 else{
-                    bw.write(Current+"\n");
+                    res = res + Current+"\n";
+
                 }
 
+                Current = br.readLine();
             }//end of loop
 
-            if (!flag){
-                File org = new File("src/main/resources/pageLocations.csv");
-                org.delete();
-                File temp = new File("src/main/resources/pageLocationsTemp.csv");
-                temp.renameTo(org);
-            }
-            else {
-                File temp = new File("src/main/resources/pageLocationsTemp.csv");
-                temp.delete();
+            if (!flag2 &!flag){
+                res = res +location + "," + page.getMax() + "," + page.getMin() + "," + curTable.getName() + "," + page.getTuples().size() + "\n";
 
             }
-
-
-            bw2.close();
-            fr3.close();
             br.close();
-            fr2.close();
-            bw.close();
             fr.close();
+
+
+
+            FileWriter fw = new FileWriter("src/main/resources/pageLocations.csv");
+            BufferedWriter bw = new BufferedWriter(fw);
+
+            bw.write(res);
+
+
+
+            bw.flush();
+            bw.close();
+
+            fw.close();
+
+
 
             //update vector table in DBTable
             //construct my tuple
@@ -600,7 +611,7 @@ public class DBApp implements DBAppInterface{
 //            System.out.println(index);
             if (index<curTable.getPages().size()){
                 curTable.getPages().remove(index);
-                System.out.println("updated line 584");
+
 
             }
 
@@ -612,6 +623,8 @@ public class DBApp implements DBAppInterface{
         catch(IOException ex){
             ex.printStackTrace();
         }
+
+
     }
 
     public  void readLocation() throws IOException {
