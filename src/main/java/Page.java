@@ -2,8 +2,7 @@ import java.beans.Transient;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Properties;
-import java.util.Vector;
+import java.util.*;
 
 public class Page implements Serializable {
     private int noRows;
@@ -55,6 +54,7 @@ public class Page implements Serializable {
                    }
                }//end of our loop
                i = indexF ;
+//               System.out.println(i);
                this.tuples.add(i,r);
 
            }
@@ -67,6 +67,31 @@ public class Page implements Serializable {
         }//end of else
 
     }//end of method
+
+
+    public int [] searchRecord (Record r){
+        int [] target = new int [2];
+        int i = 0 ;
+        Comparator<Record> c = new Comparator<Record>() {
+            public int compare(Record u1, Record u2)
+            {
+                return ((Pair)u1.getData().get(0)).compareTo((Pair)u2.getData().get(0));
+            }};
+
+        i = Collections.binarySearch(this.getTuples(),r,c);
+        if (i >= 0){
+           target[0] = i;
+           target[1] = 1 ;
+        }
+        else {
+            i = Math.abs(i +1);
+            target[0] = i;
+            target[1] = 0 ;
+        }
+        return target ;
+
+    }
+
 
 
 
@@ -94,11 +119,11 @@ public class Page implements Serializable {
         this.noRows = noRows;
     }
 
-    public static void setMaxPage(int maxPage) {
+    public  void setMaxPage(int maxPage) {
         Page.maxPage = maxPage;
     }
 
-    public static int getMaxPage() { return maxPage; }
+    public  int getMaxPage() { return maxPage; }
 
     public Vector getTuples() {
         return tuples;

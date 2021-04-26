@@ -1,8 +1,6 @@
 import java.io.Serializable;
 import java.lang.reflect.Type;
-import java.util.Hashtable;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
 
 public class DBTable<T extends Comparable <T>> implements Serializable {
     //contains pages within this table in form [location,upperBound,LowerBound,TableName,NoTuples]
@@ -37,6 +35,54 @@ public class DBTable<T extends Comparable <T>> implements Serializable {
             System.out.println("===="+key+": "+value);
         }
     }
+
+    public int searchPage (Record r){
+       int i = 0 ;
+
+       Vector v = new Vector();
+       v.add("Somewhere");
+       v.add(r.getData().get(0).getValue());
+       v.add(r.getData().get(0).getValue());
+       String type = colNameType.get((String)clusteringKey);
+        Comparator<Vector> c = new Comparator<Vector>() {
+            public int compare(Vector u1, Vector u2)
+            {
+                if (type.equals("java.lang.Integer")){
+
+                Integer min1 = (int)u1.get(2);
+                Integer min2 = (int)u2.get(2);
+                return min1.compareTo(min2);
+                }
+                else if (type.equals("java.lang.Double")){
+                    Double min1 = (double)u1.get(2);
+                    Double min2 = (double)u2.get(2);
+                    return min1.compareTo(min2);
+                }
+                else if (type.equals("java.util.Date")){
+                    Date min1 = (Date)u1.get(2);
+                    Date min2 = (Date)u2.get(2);
+                    return min1.compareTo(min2);
+                }
+                else {
+                    String min1 = (String)u1.get(2);
+                    String min2 = (String)u2.get(2);
+                    return min1.compareTo(min2);
+
+                }
+
+            }};
+        i = Collections.binarySearch(this.getPages(),v,c);
+        if (i == -1){
+            i = 0;
+        }
+        else if (i < 0){
+            i = Math.abs(i+1)-1;
+
+        }
+
+
+    return i ;
+    }// end of method
 
     public Vector<Vector<T>> getPages() {
         return pages;

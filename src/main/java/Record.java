@@ -32,7 +32,6 @@ public class Record implements Comparable, Serializable {
               data.add(p);
         }
         data.add(0,Primary);
-
     }
 
     @Override
