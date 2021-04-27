@@ -52,7 +52,9 @@ public class DBApp implements DBAppInterface{
 //               System.out.println("gowa el else");
             }
             if(getFileSize("src/main/resources/pageLocations.csv")>0){
-                readLocation();
+                for (String table : db.keySet()) {
+                    readLocation(table);
+                }
             }else{
                 FileWriter fr = new FileWriter("src/main/resources/pageLocations.csv");
                 BufferedWriter br2 = new BufferedWriter(fr);
@@ -544,7 +546,7 @@ public class DBApp implements DBAppInterface{
         try
         {
             //Saving of object in a file
-            FileOutputStream file = new FileOutputStream("src/main/resources/pages/"+filename + ".ser");
+            FileOutputStream file = new FileOutputStream("src/main/resources/data/"+filename + ".ser");
             ObjectOutputStream out = new ObjectOutputStream(file);
 
             // Method for serialization of object
@@ -568,7 +570,7 @@ public class DBApp implements DBAppInterface{
         try
         {
             // Reading the object from a file
-            FileInputStream file = new FileInputStream("src/main/resources/pages/"+filename+".ser");
+            FileInputStream file = new FileInputStream("src/main/resources/data/"+filename+".ser");
             ObjectInputStream in = new ObjectInputStream(file);
 
             // Method for deserialization of object
@@ -595,117 +597,70 @@ public class DBApp implements DBAppInterface{
     public void updateLocation(String location,Page page , int index){
         //Get Table
         DBTable curTable= db.get(page.getTable());
+        Vector <Vector> pages= curTable.getPages();
+        Vector pageInfo= new Vector();
+        pageInfo.add(location);
+        pageInfo.add(page.getMax());
+        pageInfo.add(page.getMin());
+        pageInfo.add(curTable.getName());
+        pageInfo.add(page.getTuples().size());
         try {
-            FileReader fr = new FileReader("src/main/resources/pageLocations.csv");
-            BufferedReader br = new BufferedReader(fr);
-
-            String Current = "";
-            Current= br.readLine();
-            String res = Current+"\n";
-
-
-
-            boolean flag = false ;
-            boolean flag2 = false;
-            if ((Current = br.readLine())==null) {
-                res = res +location + "," + page.getMax() + "," + page.getMin() + "," + curTable.getName() + "," + page.getTuples().size() + "\n";
-
-                flag = true ;
-            }
-
-            while ((Current)!=null && !flag){
-                String[] line = Current.split(",");
-                String loc = line[0].trim();
-
-                if (loc.equals(location)) {
-                    res = res +location + "," + page.getMax() + "," + page.getMin() + "," + curTable.getName() + "," + page.getTuples().size() + "\n";
-                    flag2 = true ;
-
-                }
-                else{
-                    res = res + Current+"\n";
-
-                }
-
-                Current = br.readLine();
-            }//end of loop
-
-            if (!flag2 &!flag){
-                res = res +location + "," + page.getMax() + "," + page.getMin() + "," + curTable.getName() + "," + page.getTuples().size() + "\n";
-
-            }
-            br.close();
-            fr.close();
-
-
-
-            FileWriter fw = new FileWriter("src/main/resources/pageLocations.csv");
-            BufferedWriter bw = new BufferedWriter(fw);
-
-            bw.write(res);
-
-
-
-            bw.flush();
-            bw.close();
-
-            fw.close();
-
-
-
-            //update vector table in DBTable
-            //construct my tuple
-            Vector pageInfo= new Vector();
-            pageInfo.add(location);
-            pageInfo.add(page.getMax());
-            pageInfo.add(page.getMin());
-            pageInfo.add(curTable.getName());
-            pageInfo.add(page.getTuples().size());
-//            System.out.println(index);
-            if (index<curTable.getPages().size()){
-                curTable.getPages().remove(index);
-
-
-            }
-
-
-            curTable.getPages().add(index,pageInfo);
-
-
+            pages.set(index, pageInfo);
         }
-        catch(IOException ex){
+        catch (ArrayIndexOutOfBoundsException e){
+            pages.add(pageInfo);
+        }
+        try
+        {
+            //Saving of object in a file
+            FileOutputStream file = new FileOutputStream("src/main/resources/data/"+ curTable.getName() + ".ser");
+            ObjectOutputStream out = new ObjectOutputStream(file);
+
+            // Method for serialization of object
+            out.writeObject(pages);
+
+            out.close();
+            file.close();
+
+//            System.out.println("Object has been serialized");
+        }
+
+        catch(IOException ex)
+        {
             ex.printStackTrace();
         }
-
-
     }
 
-    public  void readLocation() throws IOException {
-        FileReader fr = new FileReader("src/main/resources/pageLocations.csv");
-        BufferedReader br = new BufferedReader(fr);
-        String CurrentLine = "";
-        br.readLine();
+    public  void readLocation(String tableName) throws IOException {
+             Vector<Vector> pages=null;
+        try
+        {
+            // Reading the object from a file
+            FileInputStream file = new FileInputStream("src/main/resources/data/"+tableName+".ser");
+            ObjectInputStream in = new ObjectInputStream(file);
 
-        while((CurrentLine=br.readLine())!=null){
-            String[] line = CurrentLine.split(",");
-            String location = line[0].trim();
-            Object max = (line[1].trim());
-            Object min = (line[2].trim());
-            String tableName = line[3].trim();
-            int size= Integer.parseInt(line[4].trim());
+            // Method for deserialization of object
+            pages = (Vector<Vector>) in.readObject();
 
-            //construct the vector
-            Vector pageInfo= new Vector();
-            pageInfo.add(location);
-            pageInfo.add(max);
-            pageInfo.add(min);
-            pageInfo.add(tableName);
-            pageInfo.add(size);
+            in.close();
+            file.close();
+
+//            System.out.println("Object has been deserialized ");
+        }
+
+        catch(IOException ex)
+        {
+            //if nothing is found just exit
+            return;
+        }
+        catch(ClassNotFoundException ex)
+        {
+            System.out.println("ClassNotFoundException is caught");
+        }
 
             //add it to proper table
-            db.get(tableName).getPages().add(pageInfo);
+            db.get(tableName).setPages(pages);
         }
-    }
 
 
 public void validate(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException {
@@ -871,7 +826,7 @@ public void validate(String tableName, String clusteringKey, Hashtable<String, S
 //                            }
 //                            p.insertRecord(r);
 //                            serializePage(p,(String) curPage.get(0));
-//                            updateLocation((String) curPage.get(0),p);
+//                            ((String) curPage.get(0),p);
 //                            return;
 //                    //value is new max
 //                    }else  if(((Integer)max).compareTo((Integer)curKey)<0 ){

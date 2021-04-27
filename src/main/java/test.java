@@ -20,10 +20,11 @@ public class test {
 //        htblColNameMax.put("id", "999");
 //        htblColNameMax.put("name", "ZZZ");
 //        htblColNameMax.put("gpa", "999.999");
-//        //x.createTable( "table2", "id", htblColNameType,htblColNameMin,htblColNameMax );
-//        DBTable table = x.getDb().get((String)"table2");
+        //x.createTable( "table1", "id", htblColNameType,htblColNameMin,htblColNameMax );
+//        DBTable table = x.getDb().get((String)"table1");
 //        Vector pages = table.getPages();
 //        System.out.println(pages);
+//        System.out.println(x.getDb().get((String)"table1").getPages());
 //
 //
 //
@@ -69,9 +70,8 @@ public class test {
 //
 //
 //
-//        //x.insertIntoTable("table2",h1);
-//       // x.insertIntoTable("table2",h1);
-//
+//        x.insertIntoTable("table1",h1);
+
 ////        System.out.println("First Insertion");
 ////        System.out.println(p.getTuples());
 ////        System.out.println("Max is   "+p.getMax());
