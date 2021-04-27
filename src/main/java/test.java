@@ -6,132 +6,132 @@ import java.util.*;
 
 public class test {
     public static void main(String[] args) throws IOException, DBAppException, ParseException {
-        DBApp x=new DBApp();
-        x.init();
-        Hashtable htblColNameType = new Hashtable( );
-        htblColNameType.put("id", "java.lang.Integer");
-        htblColNameType.put("name", "java.lang.String");
-        htblColNameType.put("gpa", "java.lang.Double");
-        Hashtable htblColNameMin = new Hashtable( );
-        htblColNameMin.put("id", "0");
-        htblColNameMin.put("name", "a");
-        htblColNameMin.put("gpa", "0");
-        Hashtable htblColNameMax = new Hashtable( );
-        htblColNameMax.put("id", "999");
-        htblColNameMax.put("name", "ZZZ");
-        htblColNameMax.put("gpa", "999.999");
-        //x.createTable( "table2", "id", htblColNameType,htblColNameMin,htblColNameMax );
-        DBTable table = x.getDb().get((String)"table2");
-        Vector pages = table.getPages();
-        System.out.println(pages);
-
-
-
-
-        Hashtable h1 = new Hashtable( );
-        h1.put("id", new Integer(5));
-        h1.put("name", new String("ale2" ) );
-        h1.put("gpa", new Double( 0.95 ) );
-        Hashtable h2 = new Hashtable( );
-        h2.put("id", new Integer(15));
-        h2.put("name", new String("afdgsgsag" ) );
-        h2.put("gpa", new Double( 5 ) );
-        Hashtable h3 = new Hashtable( );
-        h3.put("id", new Integer(25));
-        h3.put("name", new String("afdghfghjfgjfsgsag" ) );
-        h3.put("gpa", new Double( 99 ) );
-        Hashtable h4 = new Hashtable( );
-        h4.put("id", new Integer(35));
-        h4.put("name", new String("lol" ) );
-        h4.put("gpa", new Double( 6 ) );
-        Hashtable h5 = new Hashtable( );
-        h5.put("id", new Integer(45));
-        h5.put("name", new String("five" ) );
-        h5.put("gpa", new Double( 6 ) );
-        Hashtable h6 = new Hashtable( );
-        h6.put("id", new Integer(55));
-        h6.put("name", new String("six" ) );
-        h6.put("gpa", new Double( 6 ) );
-        Hashtable h7 = new Hashtable( );
-        h7.put("id", new Integer(65));
-        h7.put("name", new String("seven" ) );
-        h7.put("gpa", new Double( 6 ) );
-
-        Hashtable h8 = new Hashtable( );
-        h8.put("id", new Integer(11));
-        h8.put("name", new String("eight" ) );
-        h8.put("gpa", new Double( 6 ) );
-        Hashtable h9 = new Hashtable( );
-        h9.put("id", new Integer(30));
-        h9.put("name", new String("nine" ) );
-        h9.put("gpa", new Double( 6 ) );
-
-
-
-
-        //x.insertIntoTable("table2",h1);
-       // x.insertIntoTable("table2",h1);
-
-//        System.out.println("First Insertion");
-//        System.out.println(p.getTuples());
-//        System.out.println("Max is   "+p.getMax());
-//        System.out.println("Min is   "+p.getMin());
-//        System.out.println("Current number of pages =   "+table.getPages().size());
-
-//        x.insertIntoTable("table2",h2);
-//        curPage= ((Vector)table.getPages().get(0));
-//        p = x.deSerializePage((String)curPage.get(0));
-//        System.out.println("Second Insertion");
-//        System.out.println(p.getTuples());
-//        System.out.println("Max is   "+p.getMax());
-//        System.out.println("Min is   "+p.getMin());
-//        System.out.println("Current number of pages =   "+table.getPages().size());
-
-
-//        x.insertIntoTable("table2",h3);
-//        curPage= ((Vector)table.getPages().get(0));
-//        p = x.deSerializePage((String)curPage.get(0));
-//        System.out.println("Third Insertion");
-//        System.out.println(p.getTuples());
-//        System.out.println("Max is   "+p.getMax());
-//        System.out.println("Min is   "+p.getMin());
-//        System.out.println("Current number of pages =   "+table.getPages().size());
-
-
-//        x.insertIntoTable("table2",h4);
-//        curPage= ((Vector)table.getPages().get(1));
-//        p = x.deSerializePage((String)curPage.get(0));
-//        System.out.println("Forth Insertion");
-//        System.out.println(p.getTuples());
-//        System.out.println("Max is   "+p.getMax());
-//        System.out.println("Min is   "+p.getMin());
-//        System.out.println("Current number of pages =   "+table.getPages().size());
-
-
-
-//        x.insertIntoTable("table2",h5);
-//        x.insertIntoTable("table2",h6);
-//        x.insertIntoTable("table2",h7);
-//        x.insertIntoTable("table2",h8);
-//        x.insertIntoTable("table2",h9);
-
-
-
-        Vector curPage= ((Vector)table.getPages().get(0));
-        Page p = null;
-
-        p = x.deSerializePage((String)curPage.get(0));
-
-        System.out.println(p.getTuples());
-//        System.out.println(((Record)p.getTuples().get(0)).getData().get(0).getValue().getClass());
-//        System.out.println(((Record)p.getTuples().get(0)).getData().get(1).getValue().getClass());
-//        System.out.println(((Record)p.getTuples().get(0)).getData().get(2).getValue().getClass());
+//        DBApp x=new DBApp();
+//        x.init();
+//        Hashtable htblColNameType = new Hashtable( );
+//        htblColNameType.put("id", "java.lang.Integer");
+//        htblColNameType.put("name", "java.lang.String");
+//        htblColNameType.put("gpa", "java.lang.Double");
+//        Hashtable htblColNameMin = new Hashtable( );
+//        htblColNameMin.put("id", "0");
+//        htblColNameMin.put("name", "a");
+//        htblColNameMin.put("gpa", "0");
+//        Hashtable htblColNameMax = new Hashtable( );
+//        htblColNameMax.put("id", "999");
+//        htblColNameMax.put("name", "ZZZ");
+//        htblColNameMax.put("gpa", "999.999");
+//        //x.createTable( "table2", "id", htblColNameType,htblColNameMin,htblColNameMax );
+//        DBTable table = x.getDb().get((String)"table2");
+//        Vector pages = table.getPages();
+//        System.out.println(pages);
 //
-        Hashtable h00 = new Hashtable( );
+//
+//
+//
+//        Hashtable h1 = new Hashtable( );
+//        h1.put("id", new Integer(5));
+//        h1.put("name", new String("ale2" ) );
+//        h1.put("gpa", new Double( 0.95 ) );
+//        Hashtable h2 = new Hashtable( );
+//        h2.put("id", new Integer(15));
+//        h2.put("name", new String("afdgsgsag" ) );
+//        h2.put("gpa", new Double( 5 ) );
+//        Hashtable h3 = new Hashtable( );
+//        h3.put("id", new Integer(25));
+//        h3.put("name", new String("afdghfghjfgjfsgsag" ) );
+//        h3.put("gpa", new Double( 99 ) );
+//        Hashtable h4 = new Hashtable( );
+//        h4.put("id", new Integer(35));
+//        h4.put("name", new String("lol" ) );
+//        h4.put("gpa", new Double( 6 ) );
+//        Hashtable h5 = new Hashtable( );
+//        h5.put("id", new Integer(45));
+//        h5.put("name", new String("five" ) );
+//        h5.put("gpa", new Double( 6 ) );
+//        Hashtable h6 = new Hashtable( );
+//        h6.put("id", new Integer(55));
+//        h6.put("name", new String("six" ) );
+//        h6.put("gpa", new Double( 6 ) );
+//        Hashtable h7 = new Hashtable( );
+//        h7.put("id", new Integer(65));
+//        h7.put("name", new String("seven" ) );
+//        h7.put("gpa", new Double( 6 ) );
+//
+//        Hashtable h8 = new Hashtable( );
 //        h8.put("id", new Integer(11));
-        h00.put("name", new String("zero" ) );
-        h00.put("gpa", new Double( 3 ) );
-        x.updateTable("table2","11",h00);
+//        h8.put("name", new String("eight" ) );
+//        h8.put("gpa", new Double( 6 ) );
+//        Hashtable h9 = new Hashtable( );
+//        h9.put("id", new Integer(30));
+//        h9.put("name", new String("nine" ) );
+//        h9.put("gpa", new Double( 6 ) );
+//
+//
+//
+//
+//        //x.insertIntoTable("table2",h1);
+//       // x.insertIntoTable("table2",h1);
+//
+////        System.out.println("First Insertion");
+////        System.out.println(p.getTuples());
+////        System.out.println("Max is   "+p.getMax());
+////        System.out.println("Min is   "+p.getMin());
+////        System.out.println("Current number of pages =   "+table.getPages().size());
+//
+////        x.insertIntoTable("table2",h2);
+////        curPage= ((Vector)table.getPages().get(0));
+////        p = x.deSerializePage((String)curPage.get(0));
+////        System.out.println("Second Insertion");
+////        System.out.println(p.getTuples());
+////        System.out.println("Max is   "+p.getMax());
+////        System.out.println("Min is   "+p.getMin());
+////        System.out.println("Current number of pages =   "+table.getPages().size());
+//
+//
+////        x.insertIntoTable("table2",h3);
+////        curPage= ((Vector)table.getPages().get(0));
+////        p = x.deSerializePage((String)curPage.get(0));
+////        System.out.println("Third Insertion");
+////        System.out.println(p.getTuples());
+////        System.out.println("Max is   "+p.getMax());
+////        System.out.println("Min is   "+p.getMin());
+////        System.out.println("Current number of pages =   "+table.getPages().size());
+//
+//
+////        x.insertIntoTable("table2",h4);
+////        curPage= ((Vector)table.getPages().get(1));
+////        p = x.deSerializePage((String)curPage.get(0));
+////        System.out.println("Forth Insertion");
+////        System.out.println(p.getTuples());
+////        System.out.println("Max is   "+p.getMax());
+////        System.out.println("Min is   "+p.getMin());
+////        System.out.println("Current number of pages =   "+table.getPages().size());
+//
+//
+//
+////        x.insertIntoTable("table2",h5);
+////        x.insertIntoTable("table2",h6);
+////        x.insertIntoTable("table2",h7);
+////        x.insertIntoTable("table2",h8);
+////        x.insertIntoTable("table2",h9);
+//
+//
+//
+//        Vector curPage= ((Vector)table.getPages().get(0));
+//        Page p = null;
+//
+//        p = x.deSerializePage((String)curPage.get(0));
+//
+//        System.out.println(p.getTuples());
+////        System.out.println(((Record)p.getTuples().get(0)).getData().get(0).getValue().getClass());
+////        System.out.println(((Record)p.getTuples().get(0)).getData().get(1).getValue().getClass());
+////        System.out.println(((Record)p.getTuples().get(0)).getData().get(2).getValue().getClass());
+////
+//        Hashtable h00 = new Hashtable( );
+////        h8.put("id", new Integer(11));
+//        h00.put("name", new String("zero" ) );
+//        h00.put("gpa", new Double( 3 ) );
+//        x.updateTable("table2","11",h00);
 
 //        p = x.deSerializePage((String)curPage.get(0));
 //

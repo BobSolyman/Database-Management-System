@@ -770,9 +770,9 @@ public void validate(String tableName, Hashtable<String, Object> colNameValue) t
             boolean bound = false;
             try {
                 Date currentValue = new SimpleDateFormat("yyyy-MM-dd").parse((String)m.getValue());
-                Date currentMin = (Date) db.get(tableName).getColNameMin().get(m.getKey());
-                Date currentMax = (Date) db.get(tableName).getColNameMax().get(m.getKey());
-//                    System.out.println(currentMin+"----"+currentMax);
+                Date currentMin =new SimpleDateFormat("yyyy-MM-dd").parse((String)db.get(tableName).getColNameMin().get(m.getKey()));
+                Date currentMax = new SimpleDateFormat("yyyy-MM-dd").parse((String)db.get(tableName).getColNameMax().get(m.getKey()));
+//                    System.out.println(currentMin+"----"+currentValue+"--------"+currentMax);
                 if(currentValue.compareTo(currentMin)>=0 && currentValue.compareTo(currentMax)<=0)
                     bound = true;
 
