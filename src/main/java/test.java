@@ -71,16 +71,14 @@ public class test {
 
         //x.insertIntoTable("table2",h1);
        // x.insertIntoTable("table2",h1);
-//        Vector curPage= ((Vector)table.getPages().get(0));
-//        Page p = null;
-//        p = x.deSerializePage((String)curPage.get(0));
+
 //        System.out.println("First Insertion");
 //        System.out.println(p.getTuples());
 //        System.out.println("Max is   "+p.getMax());
 //        System.out.println("Min is   "+p.getMin());
 //        System.out.println("Current number of pages =   "+table.getPages().size());
 
-        x.insertIntoTable("table2",h2);
+//        x.insertIntoTable("table2",h2);
 //        curPage= ((Vector)table.getPages().get(0));
 //        p = x.deSerializePage((String)curPage.get(0));
 //        System.out.println("Second Insertion");
@@ -90,7 +88,7 @@ public class test {
 //        System.out.println("Current number of pages =   "+table.getPages().size());
 
 
-        x.insertIntoTable("table2",h3);
+//        x.insertIntoTable("table2",h3);
 //        curPage= ((Vector)table.getPages().get(0));
 //        p = x.deSerializePage((String)curPage.get(0));
 //        System.out.println("Third Insertion");
@@ -100,7 +98,7 @@ public class test {
 //        System.out.println("Current number of pages =   "+table.getPages().size());
 
 
-        x.insertIntoTable("table2",h4);
+//        x.insertIntoTable("table2",h4);
 //        curPage= ((Vector)table.getPages().get(1));
 //        p = x.deSerializePage((String)curPage.get(0));
 //        System.out.println("Forth Insertion");
@@ -111,15 +109,35 @@ public class test {
 
 
 
-        x.insertIntoTable("table2",h5);
-        x.insertIntoTable("table2",h6);
-        x.insertIntoTable("table2",h7);
-        x.insertIntoTable("table2",h8);
-        x.insertIntoTable("table2",h9);
+//        x.insertIntoTable("table2",h5);
+//        x.insertIntoTable("table2",h6);
+//        x.insertIntoTable("table2",h7);
+//        x.insertIntoTable("table2",h8);
+//        x.insertIntoTable("table2",h9);
 
 
-        System.out.println(x.getDb().get("test").getPages());
-        System.out.println(x.getDb().get("table2").getPages());
+
+        Vector curPage= ((Vector)table.getPages().get(0));
+        Page p = null;
+
+        p = x.deSerializePage((String)curPage.get(0));
+
+        System.out.println(p.getTuples());
+//        System.out.println(((Record)p.getTuples().get(0)).getData().get(0).getValue().getClass());
+//        System.out.println(((Record)p.getTuples().get(0)).getData().get(1).getValue().getClass());
+//        System.out.println(((Record)p.getTuples().get(0)).getData().get(2).getValue().getClass());
+//
+        Hashtable h00 = new Hashtable( );
+//        h8.put("id", new Integer(11));
+        h00.put("name", new String("zero" ) );
+        h00.put("gpa", new Double( 3 ) );
+        x.updateTable("table2","11",h00);
+
+//        p = x.deSerializePage((String)curPage.get(0));
+//
+//        System.out.println(p.getTuples());
+
+
 
 
 

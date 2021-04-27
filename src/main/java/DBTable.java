@@ -47,12 +47,13 @@ public class DBTable<T extends Comparable <T>> implements Serializable {
         Comparator<Vector> c = new Comparator<Vector>() {
             public int compare(Vector u1, Vector u2)
             {
-                if (type.equals("java.lang.Integer")){
+                if (type.equals("java.lang.Integer")) {
 
-                Integer min1 = (int)u1.get(2);
-                Integer min2 = (int)u2.get(2);
-                return min1.compareTo(min2);
+                    Integer min1 = (int) u1.get(2);
+                    Integer min2 = (int) u2.get(2);
+                    return min1.compareTo(min2);
                 }
+
                 else if (type.equals("java.lang.Double")){
                     Double min1 = (double)u1.get(2);
                     Double min2 = (double)u2.get(2);
