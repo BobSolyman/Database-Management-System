@@ -228,8 +228,9 @@ public class DBApp implements DBAppInterface{
                 p.setMax(r.getData().get(0).getValue());
                 p.setMin(r.getData().get(0).getValue());
                 p.setNoRows(p.getTuples().size());
-                serializePage(p,tableName+"0");
-                updateLocation(tableName+"0",p,0);
+                serializePage(p,tableName+db.get(tableName).getPageID());
+                updateLocation(tableName+db.get(tableName).getPageID(),p,0);
+                db.get(tableName).setPageID(db.get(tableName).getPageID()+1);
                 //System.out.println(curTable.getPages());
             }
             catch(IOException e){
@@ -267,8 +268,8 @@ public class DBApp implements DBAppInterface{
                     p.setMax(((Record)p.getTuples().get(p.getTuples().size()-1)).getData().get(0).getValue());
                     p.setNoRows(p.getTuples().size());
                 }
-                serializePage(p,tableName+indexP);
-                updateLocation(tableName+indexP,p,indexP);
+                serializePage(p,(String)curPage.get(0));
+                updateLocation((String)curPage.get(0),p,indexP);
 
             }
 
@@ -284,8 +285,8 @@ public class DBApp implements DBAppInterface{
                          flag = false ;
                          p.setMax(((Record)p.getTuples().get(p.getTuples().size()-1)).getData().get(0).getValue());
                          p.setNoRows(p.getTuples().size());
-                         serializePage(p,tableName+indexP);
-                         updateLocation(tableName+indexP,p,indexP);
+                         serializePage(p,(String)curPage.get(0));
+                         updateLocation((String)curPage.get(0),p,indexP);
                          break;
                         }
                     shifter = (Record)p.getTuples().get(p.getTuples().size()-1);
@@ -293,8 +294,8 @@ public class DBApp implements DBAppInterface{
                     p.setMax(((Record)p.getTuples().get(p.getTuples().size()-1)).getData().get(0).getValue());
                     p.setNoRows(p.getTuples().size());
 
-                    serializePage(p,tableName+indexP);
-                    updateLocation(tableName+indexP,p,indexP);
+                    serializePage(p,(String)curPage.get(0));
+                    updateLocation((String)curPage.get(0),p,indexP);
 
 
             }
@@ -305,8 +306,9 @@ public class DBApp implements DBAppInterface{
                     newP.setMax(shifter.getData().get(0).getValue());
                     newP.setMin(shifter.getData().get(0).getValue());
                     newP.setNoRows(newP.getTuples().size());
-                    serializePage(newP, tableName + indexP);
-                    updateLocation(tableName + indexP, newP, indexP);
+                    serializePage(newP,tableName+db.get(tableName).getPageID());
+                    updateLocation(tableName+db.get(tableName).getPageID(),newP,indexP);
+                    db.get(tableName).setPageID(db.get(tableName).getPageID()+1);
                 }
                 catch (Exception e ){
                     System.out.println("Something went wrong line 421");
@@ -519,15 +521,80 @@ public class DBApp implements DBAppInterface{
             }
 
             ((Record) p.getTuples().get(indexR[0])).setData(oldV);
-            serializePage(p, tableName + indexP);
-            updateLocation(tableName + indexP, p, indexP);
+            serializePage(p,(String)curPage.get(0));
+            updateLocation((String)curPage.get(0),p,indexP);
         }
 
     }
 
     public void deleteFromTable(String tableName, Hashtable<String, Object> columnNameValue) throws DBAppException {
+        //Table name entered is null
+        if(tableName==null)
+            throw new DBAppException("TABLE MUST HAVE A NAME!!!");
 
-    }
+        //Table name doesn't exist
+        if(!db.containsKey(tableName))
+            throw new DBAppException("TABLE NAME NOT FOUND!!!");
+
+        //Check if column doesn't exist
+        boolean containsClusteringKey = false;
+        Set <String> keys =columnNameValue.keySet();
+        for(String key: keys) {
+            if (!db.get(tableName).getColNameType().containsKey(key)) {
+                throw new DBAppException("COLUMN NOT FOUND!!!");
+            }
+            if(db.get(tableName).getClusteringKey().equals(key)){
+                containsClusteringKey = true;
+            }
+        } // end of for loop
+
+        //Check if there are no pages in the table
+        if(db.get(tableName).getPages().size() == 0){
+            throw new DBAppException("TABLE IS EMPTY");
+        }
+
+        String clusteringKey = db.get(tableName).getClusteringKey();
+        if(containsClusteringKey){
+            Record r = new Record(columnNameValue, clusteringKey);
+            int indexP = db.get(tableName).searchPage(r);
+            Vector curPage = ((Vector)db.get(tableName).getPages().get(indexP));
+            Page p = deSerializePage((String)curPage.get(0));
+            int[] indexR = p.searchRecord(r);
+            if (indexR[1]==0){
+                throw new DBAppException("Record not found");
+            }
+            else{
+                p.getTuples().remove(indexR[0]);
+                if(p.getTuples().size()==0){
+                    db.get(tableName).getPages().remove(indexP);
+                    File tbd = new File("src/main/resources/data/"+(String)curPage.get(0)+".ser");
+                    tbd.delete();
+                }
+                else {
+                    serializePage(p, (String) curPage.get(0));
+                    updateLocation((String) curPage.get(0), p, indexP);
+                }
+            }
+        }
+        else{
+            Record r = new Record(columnNameValue, clusteringKey);
+            for (int i=db.get(tableName).getPages().size()-1; i>=0; i--){
+                Vector curPage = ((Vector)db.get(tableName).getPages().get(i));
+                Page p = deSerializePage((String)curPage.get(0));
+                p.deleteRecord(r);
+                if(p.getTuples().size()==0){
+                    db.get(tableName).getPages().remove(i);
+                    File tbd = new File("src/main/resources/data/"+(String)curPage.get(0)+".ser");
+                    tbd.delete();
+                }
+                else {
+                    serializePage(p, (String) curPage.get(0));
+                    updateLocation((String) curPage.get(0), p, i);
+                }
+            }
+        }
+
+    } //end of method
 
     public Iterator selectFromTable(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException {
         return null;

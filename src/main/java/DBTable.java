@@ -5,6 +5,7 @@ import java.util.*;
 public class DBTable<T extends Comparable <T>> implements Serializable {
     //contains pages within this table in form [location,upperBound,LowerBound,TableName,NoTuples]
     private Vector<Vector<T>> pages;
+    private int pageID;
     private String name;
     private String clusteringKey;
     private Vector tuples;
@@ -12,13 +13,20 @@ public class DBTable<T extends Comparable <T>> implements Serializable {
     private Hashtable<String, String> colNameMax;
     private Hashtable<String, String> colNameType;
 
+    public int getPageID() {
+        return pageID;
+    }
 
+    public void setPageID(int pageID) {
+        this.pageID = pageID;
+    }
 
-    public DBTable(String name, String clusteringKey,Hashtable<String,String> colNameType){
+    public DBTable(String name, String clusteringKey, Hashtable<String,String> colNameType){
         this.name = name;
         this.clusteringKey=clusteringKey;
         this.colNameType = colNameType;
         this.pages = new Vector<>();
+        this.pageID=0;
     }
 
     public void addColumn(String name, String type, String min, String max){

@@ -92,7 +92,28 @@ public class Page implements Serializable {
 
     }
 
-
+    public void deleteRecord(Record r){
+        for (int i=this.getTuples().size()-1; i>=0; i--){
+            Record currentRec = (Record)this.getTuples().get(i);
+            boolean mismatch = false;
+            for (int j=1; j<currentRec.getData().size(); j++){
+                for (int k=0; k<r.getData().size(); k++){
+                    if(currentRec.getData().get(j).getKey().equals(r.getData().get(k).getKey())){
+                        if (!currentRec.getData().get(j).getValue().equals(r.getData().get(k).getValue())) {
+                            mismatch = true;
+                            break;
+                        }
+                    }
+                }
+                if (mismatch){
+                    break;
+                }
+            }
+            if(!mismatch){
+                this.getTuples().remove(i);
+            }
+        }
+    }
 
 
     public Object getMin() {

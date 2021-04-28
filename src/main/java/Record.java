@@ -31,7 +31,8 @@ public class Record implements Comparable, Serializable {
           else
               data.add(p);
         }
-        data.add(0,Primary);
+        if(Primary!=null)
+            data.add(0,Primary);
     }
 
     @Override
@@ -39,5 +40,7 @@ public class Record implements Comparable, Serializable {
         Record r = (Record) o ;
         return this.getData().get(0).compareTo(r.getData().get(0));
     }
+
+
 
 }
