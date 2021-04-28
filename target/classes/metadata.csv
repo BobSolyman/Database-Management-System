@@ -14,9 +14,3 @@ transcripts,course_name,java.lang.String,FALSE,FALSE,AAAAAA,zzzzzz
 transcripts,student_id,java.lang.String,FALSE,FALSE,43-0000,99-9999
 pcs,pc_id,java.lang.Integer,TRUE,FALSE,0,20000
 pcs,student_id,java.lang.String,FALSE,FALSE,43-0000,99-9999
-table2,gpa,java.lang.Double,FALSE,FALSE,0,999.999
-table2,name,java.lang.String,FALSE,FALSE,a,ZZZ
-table2,id,java.lang.Integer,TRUE,FALSE,0,999
-table1,gpa,java.lang.Double,FALSE,FALSE,0,999.999
-table1,name,java.lang.String,FALSE,FALSE,a,ZZZ
-table1,id,java.lang.Integer,TRUE,FALSE,0,999

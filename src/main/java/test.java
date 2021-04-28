@@ -2,53 +2,96 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class test {
     public static void main(String[] args) throws IOException, DBAppException, ParseException {
-//        DBApp x=new DBApp();
-//        x.init();
-//        Hashtable htblColNameType = new Hashtable( );
-//        htblColNameType.put("id", "java.lang.Integer");
-//        htblColNameType.put("name", "java.lang.String");
-//        htblColNameType.put("gpa", "java.lang.Double");
-//        Hashtable htblColNameMin = new Hashtable( );
-//        htblColNameMin.put("id", "0");
-//        htblColNameMin.put("name", "a");
-//        htblColNameMin.put("gpa", "0");
-//        Hashtable htblColNameMax = new Hashtable( );
-//        htblColNameMax.put("id", "999");
-//        htblColNameMax.put("name", "ZZZ");
-//        htblColNameMax.put("gpa", "999.999");
-        //x.createTable( "table1", "id", htblColNameType,htblColNameMin,htblColNameMax );
-//        DBTable table = x.getDb().get((String)"table1");
-//        Vector pages = table.getPages();
+        DBApp x=new DBApp();
+        x.init();
+        Hashtable htblColNameType = new Hashtable( );
+        htblColNameType.put("id", "java.lang.Integer");
+        htblColNameType.put("name", "java.util.Date");
+        htblColNameType.put("gpa", "java.lang.Double");
+        Hashtable htblColNameMin = new Hashtable( );
+        htblColNameMin.put("id", "0");
+        htblColNameMin.put("name","1948-06-09");
+        htblColNameMin.put("gpa", "0");
+        Hashtable htblColNameMax = new Hashtable( );
+        htblColNameMax.put("id", "999");
+        htblColNameMax.put("name", "2420-08-22");
+        htblColNameMax.put("gpa", "999.999");
+//        x.createTable( "testDateDate", "id", htblColNameType,htblColNameMin,htblColNameMax );
+        DBTable table = x.getDb().get((String)"testDate");
+        Vector pages = table.getPages();
 //        System.out.println(pages);
-//        System.out.println(x.getDb().get((String)"table1").getPages());
+//        System.out.println(x.getDb().get((String)"testDate").getPages().size());
+//        Date p =new SimpleDateFormat("yyyy-MM-dd").parse((String)x.getDb().get((String)"testDate").getColNameMin().get("id"));
+//        System.out.println(p);
+//        System.out.println((new Date(2000-1900,8-1,9)));
 //
+
 //
+// line 461 in update table
+//
+
 //
 //
 //        Hashtable h1 = new Hashtable( );
-//        h1.put("id", new Integer(5));
+//        h1.put("id", new Date(2000,8,9));
 //        h1.put("name", new String("ale2" ) );
 //        h1.put("gpa", new Double( 0.95 ) );
+//
+//        x.insertIntoTable("testDate",h1);
+//        System.out.println(x.getDb().get((String)"testDate").getPages().size());
+//
+//
 //        Hashtable h2 = new Hashtable( );
-//        h2.put("id", new Integer(15));
+//        h2.put("id", new Date(2010,4,7));
 //        h2.put("name", new String("afdgsgsag" ) );
 //        h2.put("gpa", new Double( 5 ) );
 //        Hashtable h3 = new Hashtable( );
-//        h3.put("id", new Integer(25));
+//        h3.put("id", new Date(1950,4,9));
 //        h3.put("name", new String("afdghfghjfgjfsgsag" ) );
 //        h3.put("gpa", new Double( 99 ) );
+//
+//        x.insertIntoTable("testDate",h2);
+//        System.out.println(x.getDb().get((String)"testDate").getPages().size());
+//        x.insertIntoTable("testDate",h3);
+//        System.out.println(x.getDb().get((String)"testDate").getPages().size());
+
+
+
+
+
 //        Hashtable h4 = new Hashtable( );
-//        h4.put("id", new Integer(35));
-//        h4.put("name", new String("lol" ) );
+//        h4.put("id", new Integer(1));
+//        h4.put("name",new Date (2000,1,1) );
 //        h4.put("gpa", new Double( 6 ) );
-//        Hashtable h5 = new Hashtable( );
+
+//        x.insertIntoTable("testDateDate",h4);
+        table = x.getDb().get((String)"testDate");
+
+        Vector curPage= ((Vector)table.getPages().get(0));
+        Page p = null;
+
+        p = x.deSerializePage((String)curPage.get(0));
+        System.out.println(p.getTuples());
+        Hashtable h5 = new Hashtable( );
 //        h5.put("id", new Integer(45));
-//        h5.put("name", new String("five" ) );
-//        h5.put("gpa", new Double( 6 ) );
+        h5.put("name","legenDARY!!");
+
+
+        x.updateTable("testDate","1950-04-09",h5);
+
+        curPage= ((Vector)table.getPages().get(0));
+        p = null;
+
+        p = x.deSerializePage((String)curPage.get(0));
+
+        System.out.println(p.getTuples());
+
+
 //        Hashtable h6 = new Hashtable( );
 //        h6.put("id", new Integer(55));
 //        h6.put("name", new String("six" ) );
@@ -66,9 +109,6 @@ public class test {
 //        h9.put("id", new Integer(30));
 //        h9.put("name", new String("nine" ) );
 //        h9.put("gpa", new Double( 6 ) );
-//
-//
-//
 //
 //        x.insertIntoTable("table1",h1);
 

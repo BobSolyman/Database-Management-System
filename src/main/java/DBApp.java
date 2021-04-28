@@ -51,19 +51,11 @@ public class DBApp implements DBAppInterface{
                 fr.close();
 //               System.out.println("gowa el else");
             }
-            if(getFileSize("src/main/resources/pageLocations.csv")>0){
+
                 for (String table : db.keySet()) {
                     readLocation(table);
                 }
-            }else{
-                FileWriter fr = new FileWriter("src/main/resources/pageLocations.csv");
-                BufferedWriter br2 = new BufferedWriter(fr);
-                String d = "Location, max, min, tableName, size"+"\n";
-                br2.write(d);
-                br2.close();
-                fr.close();
 
-            }
 
         } catch (IOException i) {
             i.printStackTrace();
@@ -232,7 +224,7 @@ public class DBApp implements DBAppInterface{
             try {
                 Page p = new Page(tableName);
                 Record r = new Record(colNameValue,(String) clusteringKey);
-                p.insertRecord(r);
+                p.getTuples().add(r);
                 p.setMax(r.getData().get(0).getValue());
                 p.setMin(r.getData().get(0).getValue());
                 p.setNoRows(p.getTuples().size());
@@ -262,8 +254,7 @@ public class DBApp implements DBAppInterface{
                 throw new DBAppException("Clustering Key already Exists");
             }
             else {
-                p.insertRecord(r);            // could be optimised bcuz we are searching twice in the records
-               Vector records = p.getTuples();
+                p.getTuples().add(indexR[0],r);            // could be optimised bcuz we are searching twice in the records
                 p.setMax(((Record)p.getTuples().get(p.getTuples().size()-1)).getData().get(0).getValue());
                 p.setMin(((Record)p.getTuples().get(0)).getData().get(0).getValue());
                 p.setNoRows(p.getTuples().size());
@@ -285,7 +276,7 @@ public class DBApp implements DBAppInterface{
 
                     curPage= ((Vector)curTable.getPages().get(indexP));
                     p = deSerializePage((String)curPage.get(0));
-                    p.insertRecord(shifter);
+                    p.getTuples().add(0,shifter);
                     p.setMax(((Record)p.getTuples().get(p.getTuples().size()-1)).getData().get(0).getValue());
                     p.setMin(((Record)p.getTuples().get(0)).getData().get(0).getValue());
                     p.setNoRows(p.getTuples().size());
@@ -310,8 +301,7 @@ public class DBApp implements DBAppInterface{
             if (flag && indexP==curTable.getPages().size()){   // new page needed
                 try {
                     Page newP = new Page(tableName);
-                    Record newShifter = (Record)p.getTuples().get(p.getTuples().size()-1);
-                    newP.insertRecord(shifter);
+                    newP.getTuples().add(shifter);
                     newP.setMax(shifter.getData().get(0).getValue());
                     newP.setMin(shifter.getData().get(0).getValue());
                     newP.setNoRows(newP.getTuples().size());
@@ -467,14 +457,17 @@ public class DBApp implements DBAppInterface{
             else if(entryType.equals("java.util.Date")){
                 boolean bound = false;
                 try {
-                    Date currentValue = new SimpleDateFormat("yyyy-MM-dd").parse((String)m.getValue());
-                    Date currentMin = (Date) db.get(tableName).getColNameMin().get(m.getKey());
-                    Date currentMax = (Date) db.get(tableName).getColNameMax().get(m.getKey());
+                    Date currentValue = ((Date)m.getValue());
+//                    currentValue.setYear(currentValue.getYear()-1900);
+//                    currentValue.setMonth(currentValue.getMonth()-1);
+                    Date currentMin = new SimpleDateFormat("yyyy-MM-dd").parse((String) db.get(tableName).getColNameMin().get(m.getKey()));
+                    Date currentMax = new SimpleDateFormat("yyyy-MM-dd").parse((String) db.get(tableName).getColNameMax().get(m.getKey()));
                     if(currentValue.compareTo(currentMin)>=0 && currentValue.compareTo(currentMax)<=0)
                         bound = true;
                 }
                 catch (Exception e){
-                    throw new DBAppException("Type mismatch: supposed to be a Date.");
+                    e.printStackTrace();
+//                    throw new DBAppException("Type mismatch: supposed to be a Date.");
                 }
                 if(!bound)
                     throw new DBAppException("Column value out of bounds");
@@ -524,7 +517,7 @@ public class DBApp implements DBAppInterface{
                     oldV.get(i).setValue(columnNameValue.get(oldV.get(i).getKey()));
                 }
             }
-            System.out.println(((Record) p.getTuples().get(indexR[0])).getData());
+
             ((Record) p.getTuples().get(indexR[0])).setData(oldV);
             serializePage(p, tableName + indexP);
             updateLocation(tableName + indexP, p, indexP);
@@ -724,10 +717,12 @@ public void validate(String tableName, Hashtable<String, Object> colNameValue) t
         else if(entryType.equals("java.util.Date")){
             boolean bound = false;
             try {
-                Date currentValue = new SimpleDateFormat("yyyy-MM-dd").parse((String)m.getValue());
-                Date currentMin =new SimpleDateFormat("yyyy-MM-dd").parse((String)db.get(tableName).getColNameMin().get(m.getKey()));
-                Date currentMax = new SimpleDateFormat("yyyy-MM-dd").parse((String)db.get(tableName).getColNameMax().get(m.getKey()));
-//                    System.out.println(currentMin+"----"+currentValue+"--------"+currentMax);
+                Date currentValue = ((Date)m.getValue());
+//                currentValue.setYear(currentValue.getYear()-1900);
+//                currentValue.setMonth(currentValue.getMonth()-1);
+                Date currentMin = new SimpleDateFormat("yyyy-MM-dd").parse((String) db.get(tableName).getColNameMin().get(m.getKey()));
+                Date currentMax = new SimpleDateFormat("yyyy-MM-dd").parse((String) db.get(tableName).getColNameMax().get(m.getKey()));
+
                 if(currentValue.compareTo(currentMin)>=0 && currentValue.compareTo(currentMax)<=0)
                     bound = true;
 

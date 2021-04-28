@@ -527,7 +527,7 @@ public class Milestone1Tests {
         if (limit == -1) {
             c = 1;
         }
-        while ((record = pcsTable.readLine()) != null) {
+        while ((record = pcsTable.readLine()) != null && c>0) {
             String[] fields = record.split(",");
 
             row.put("pc_id", Integer.parseInt(fields[0].trim()));
