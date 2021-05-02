@@ -509,7 +509,7 @@ public class DBApp implements DBAppInterface{
         Page p = deSerializePage((String)curPage.get(0));
         int[] indexR = p.searchRecord(r);
         if (indexR[1]==0){
-            throw new DBAppException("Record not found");
+            System.out.println("Record not found");
         }
         else {
             Vector<Pair> oldV = ((Record) p.getTuples().get(indexR[0])).getData();
@@ -561,7 +561,7 @@ public class DBApp implements DBAppInterface{
             Page p = deSerializePage((String)curPage.get(0));
             int[] indexR = p.searchRecord(r);
             if (indexR[1]==0){
-                throw new DBAppException("Record not found");
+                System.out.println("Record not found");
             }
             else{
                 p.getTuples().remove(indexR[0]);
