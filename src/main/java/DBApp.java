@@ -263,43 +263,68 @@ public class DBApp implements DBAppInterface{
 //                System.out.println("max records in page"+p.getMaxPage());
                 if (p.getTuples().size()>p.getMaxPage()){
                     flag = true ;
-                    shifter = (Record)p.getTuples().get(p.getTuples().size()-1);
-                    p.getTuples().remove(shifter);
-                    p.setMax(((Record)p.getTuples().get(p.getTuples().size()-1)).getData().get(0).getValue());
-                    p.setNoRows(p.getTuples().size());
+//                    shifter = (Record)p.getTuples().get(p.getTuples().size()-1);
+//                    p.getTuples().remove(shifter);
+//                    p.setMax(((Record)p.getTuples().get(p.getTuples().size()-1)).getData().get(0).getValue());
+//                    p.setNoRows(p.getTuples().size());
                 }
                 serializePage(p,(String)curPage.get(0));
                 updateLocation((String)curPage.get(0),p,indexP);
 
             }
+            if (flag){
+                if (indexP < curTable.getPages().size()-1){
+                    Vector nextPage= ((Vector)curTable.getPages().get(indexP+1));
+                    Page pNext = null ;
+                    pNext = deSerializePage((String)nextPage.get(0));
+                    if (pNext.getTuples().size()< pNext.getMaxPage()){
+                        shifter = (Record)p.getTuples().get(p.getTuples().size()-1);
+                        p.getTuples().remove(shifter);
+                        p.setMax(((Record)p.getTuples().get(p.getTuples().size()-1)).getData().get(0).getValue());
+                        p.setNoRows(p.getTuples().size());
+                        serializePage(p,(String)curPage.get(0));
+                        updateLocation((String)curPage.get(0),p,indexP);
+                        pNext.insertRecord(shifter);
+                        pNext.setMax(((Record)pNext.getTuples().get(pNext.getTuples().size()-1)).getData().get(0).getValue());
+                        pNext.setMin(((Record)pNext.getTuples().get(0)).getData().get(0).getValue());
+                        pNext.setNoRows(pNext.getTuples().size());
+                        serializePage(pNext,(String)nextPage.get(0));
+                        updateLocation((String)nextPage.get(0),pNext,indexP+1);
+                        flag = false ;
+                    }
 
-            while (flag && ++indexP < curTable.getPages().size()){
+                }// end of our first if case not being last page
+                if (flag && indexP > 0){
+                    Vector prevPage= ((Vector)curTable.getPages().get(indexP-1));
+                    Page pBack = null ;
+                    pBack = deSerializePage((String)prevPage.get(0));
+                    if (pBack.getTuples().size()< pBack.getMaxPage()){
+                        shifter = (Record)p.getTuples().get(0);
+                        p.getTuples().remove(shifter);
+                        p.setMin(((Record)p.getTuples().get(0)).getData().get(0).getValue());
+                        p.setNoRows(p.getTuples().size());
+                        serializePage(p,(String)curPage.get(0));
+                        updateLocation((String)curPage.get(0),p,indexP);
+                        pBack.insertRecord(shifter);
+                        pBack.setMax(((Record)pBack.getTuples().get(pBack.getTuples().size()-1)).getData().get(0).getValue());
+                        pBack.setMin(((Record)pBack.getTuples().get(0)).getData().get(0).getValue());
+                        pBack.setNoRows(pBack.getTuples().size());
+                        serializePage(pBack,(String)prevPage.get(0));
+                        updateLocation((String)prevPage.get(0),pBack,indexP-1);
+                        flag = false ;
+                    }
 
-                    curPage= ((Vector)curTable.getPages().get(indexP));
-                    p = deSerializePage((String)curPage.get(0));
-                    p.getTuples().add(0,shifter);
-                    p.setMax(((Record)p.getTuples().get(p.getTuples().size()-1)).getData().get(0).getValue());
-                    p.setMin(((Record)p.getTuples().get(0)).getData().get(0).getValue());
-                    p.setNoRows(p.getTuples().size());
-                    if (p.getTuples().size()<=p.getMaxPage()){
-                         flag = false ;
-                         p.setMax(((Record)p.getTuples().get(p.getTuples().size()-1)).getData().get(0).getValue());
-                         p.setNoRows(p.getTuples().size());
-                         serializePage(p,(String)curPage.get(0));
-                         updateLocation((String)curPage.get(0),p,indexP);
-                         break;
-                        }
-                    shifter = (Record)p.getTuples().get(p.getTuples().size()-1);
-                    p.getTuples().remove(shifter);
-                    p.setMax(((Record)p.getTuples().get(p.getTuples().size()-1)).getData().get(0).getValue());
-                    p.setNoRows(p.getTuples().size());
+                  }// end of our second if not being first page
 
-                    serializePage(p,(String)curPage.get(0));
-                    updateLocation((String)curPage.get(0),p,indexP);
+            }// end of our existing problem (SHIFTING!!)
 
-
-            }
-            if (flag && indexP==curTable.getPages().size()){   // new page needed
+            if (flag){   // new page needed at the end case  (overflow)
+                shifter = (Record)p.getTuples().get(p.getTuples().size()-1);
+                p.getTuples().remove(shifter);
+                p.setMax(((Record)p.getTuples().get(p.getTuples().size()-1)).getData().get(0).getValue());
+                p.setNoRows(p.getTuples().size());
+                serializePage(p,(String)curPage.get(0));
+                updateLocation((String)curPage.get(0),p,indexP);
                 try {
                     Page newP = new Page(tableName);
                     newP.getTuples().add(shifter);
@@ -307,33 +332,18 @@ public class DBApp implements DBAppInterface{
                     newP.setMin(shifter.getData().get(0).getValue());
                     newP.setNoRows(newP.getTuples().size());
                     serializePage(newP,tableName+db.get(tableName).getPageID());
-                    updateLocation(tableName+db.get(tableName).getPageID(),newP,indexP);
+                    updateLocation(tableName+db.get(tableName).getPageID(),newP,indexP+1);
                     db.get(tableName).setPageID(db.get(tableName).getPageID()+1);
                 }
                 catch (Exception e ){
-                    System.out.println("Something went wrong line 421");
+                    System.out.println("Something went wrong line 339");
                 }
 
-            }
-
-
+            } // end of overflow
 
         }// end of else
 
-
-
-
-
-
-
-
-
-//        for(Map.Entry m: colNameValue.entrySet()){
-//            if(m.getValue() instanceof (Object)(this.db.get(tableName).getColNameType().get(m.getKey())))
-//                throw new DBAppException("Column mismatch");
-//        }
-
-    }
+    }// end of insert method
 
     public void updateTable(String tableName, String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException {
         //checking if key already exists should be done when page is deSerialized
@@ -1034,6 +1044,41 @@ public void validate(String tableName, String clusteringKey, Hashtable<String, S
 //                e.printStackTrace();
 //            }
 //        }
+
+
+
+
+
+            /// to defrag all pages and shift
+
+//            while (flag && ++indexP < curTable.getPages().size()){
+//
+//                    curPage= ((Vector)curTable.getPages().get(indexP));
+//                    p = deSerializePage((String)curPage.get(0));
+//                    p.getTuples().add(0,shifter);
+//                    p.setMax(((Record)p.getTuples().get(p.getTuples().size()-1)).getData().get(0).getValue());
+//                    p.setMin(((Record)p.getTuples().get(0)).getData().get(0).getValue());
+//                    p.setNoRows(p.getTuples().size());
+//                    if (p.getTuples().size()<=p.getMaxPage()){
+//                         flag = false ;
+//                         p.setMax(((Record)p.getTuples().get(p.getTuples().size()-1)).getData().get(0).getValue());
+//                         p.setNoRows(p.getTuples().size());
+//                         serializePage(p,(String)curPage.get(0));
+//                         updateLocation((String)curPage.get(0),p,indexP);
+//                         break;
+//                        }
+//                    shifter = (Record)p.getTuples().get(p.getTuples().size()-1);
+//                    p.getTuples().remove(shifter);
+//                    p.setMax(((Record)p.getTuples().get(p.getTuples().size()-1)).getData().get(0).getValue());
+//                    p.setNoRows(p.getTuples().size());
+//
+//                    serializePage(p,(String)curPage.get(0));
+//                    updateLocation((String)curPage.get(0),p,indexP);
+//
+//
+//            }
+
+
 
 
 
