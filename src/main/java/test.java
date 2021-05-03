@@ -11,18 +11,18 @@ public class test {
         x.init();
         Hashtable htblColNameType = new Hashtable( );
         htblColNameType.put("id", "java.lang.Integer");
-        htblColNameType.put("name", "java.util.Date");
+        htblColNameType.put("name", "java.lang.String");
         htblColNameType.put("gpa", "java.lang.Double");
         Hashtable htblColNameMin = new Hashtable( );
         htblColNameMin.put("id", "0");
-        htblColNameMin.put("name","1948-06-09");
+        htblColNameMin.put("name","a");
         htblColNameMin.put("gpa", "0");
         Hashtable htblColNameMax = new Hashtable( );
         htblColNameMax.put("id", "999");
-        htblColNameMax.put("name", "2420-08-22");
+        htblColNameMax.put("name", "zzzzzzzzz");
         htblColNameMax.put("gpa", "999.999");
-//        x.createTable( "testdelete", "id", htblColNameType,htblColNameMin,htblColNameMax );
-        DBTable table = x.getDb().get((String)"testdelete");
+//        x.createTable( "test", "id", htblColNameType,htblColNameMin,htblColNameMax );
+        DBTable table = x.getDb().get((String)"test");
 //        Vector pages = table.getPages();
 //        System.out.println(pages);
 //        System.out.println(x.getDb().get((String)"testDate").getPages().size());
@@ -66,98 +66,107 @@ public class test {
 //----------------
         Hashtable h41 = new Hashtable( );
         h41.put("id", new Integer(1));
-        h41.put("name",new Date (2000-1900,1-1,1) );
-        h41.put("gpa", new Double( 6 ) );
+//        h41.put("name",new String("first") );
+//        h41.put("gpa", new Double( 6 ) );
 
-        x.insertIntoTable("testdelete",h41);
 
         Hashtable h42 = new Hashtable( );
-        h42.put("id", new Integer(2));
-        h42.put("name",new Date (2001-1900,1-1,1) );
-        h42.put("gpa", new Double( 6 ) );
+        h42.put("id", new Integer(3));
+//        h42.put("name",new String("second"));
+////        h42.put("gpa", new Double( 6 ) );
 
-        x.insertIntoTable("testdelete",h42);
 
         Hashtable h43 = new Hashtable( );
-        h43.put("id", new Integer(3));
-        h43.put("name",new Date (2002-1900,1-1,1) );
-        h43.put("gpa", new Double( 4 ) );
+        h43.put("id", new Integer(5));
+//        h43.put("name",new String("7aga") );
+////        h43.put("gpa", new Double( 4 ) );
 
-        x.insertIntoTable("testdelete",h43);
+
 
         Hashtable h44 = new Hashtable( );
         h44.put("id", new Integer(10));
-        h44.put("name",new Date (2012-1900,12-1,12) );
-        h44.put("gpa", new Double( 6 ) );
+//        h44.put("name",new Date (2012-1900,12-1,12) );
+//        h44.put("gpa", new Double( 6 ) );
 
-        x.insertIntoTable("testdelete",h44);
 
         Hashtable h45 = new Hashtable( );
         h45.put("id", new Integer(11));
-        h45.put("name",new Date (2012-1900,12-1,12) );
-        h45.put("gpa", new Double( 1 ) );
+//        h45.put("name",new Date (2012-1900,12-1,12) );
+//        h45.put("gpa", new Double( 1 ) );
 
-        x.insertIntoTable("testdelete",h45);
+
 
         Hashtable h46 = new Hashtable( );
         h46.put("id", new Integer(12));
-        h46.put("name",new Date (2012-1900,12-1,12) );
-        h46.put("gpa", new Double( 16 ) );
+//        h46.put("name",new Date (2012-1900,12-1,12) );
 
-        x.insertIntoTable("testdelete",h46);
 
         Hashtable h47 = new Hashtable( );
-        h47.put("id", new Integer(20));
-        h47.put("name",new Date (2002-1900,4-1,13) );
-        h47.put("gpa", new Double( 3.2 ) );
+        h47.put("id", new Integer(50));
+//        h47.put("name",new Date (2002-1900,4-1,13) );
+//        h47.put("gpa", new Double( 3.2 ) );
 
-        x.insertIntoTable("testdelete",h47);
+//
+//        x.insertIntoTable("test",h41);
+//        x.insertIntoTable("test",h42);
+//        x.insertIntoTable("test",h43);
+//        x.insertIntoTable("test",h44);
+//        x.insertIntoTable("test",h45);
+//        x.insertIntoTable("test",h46);
+//        x.insertIntoTable("test",h47);
+//        x.deleteFromTable("test",h43);
 
-        Hashtable h48 = new Hashtable( );
-        h48.put("id", new Integer(21));
-        h48.put("name",new Date (2012-1900,12-1,12) );
-        h48.put("gpa", new Double( 1.68 ) );
 
-        x.insertIntoTable("testdelete",h48);
-
-        Hashtable h49 = new Hashtable( );
-        h49.put("id", new Integer(22));
-        h49.put("name",new Date (2000-1900,9-1,7) );
-        h49.put("gpa", new Double( 1.92 ) );
-
-        x.insertIntoTable("testdelete",h49);
-        //=============
-
-        table = x.getDb().get((String)"testdelete");
+        table = x.getDb().get((String)"test");
 
         Vector curPage= ((Vector)table.getPages().get(0));
         Page p = null;
+        System.out.println(table.getPageID());
+        for (int i=0; i<table.getPages().size(); i++){
+            curPage= ((Vector)table.getPages().get(i));
+//            System.out.println(curPage.get(0));
+            p = x.deSerializePage((String)curPage.get(0));
+            System.out.println(p.getTuples());
+        }
 
-        p = x.deSerializePage((String)curPage.get(0));
-        System.out.println(p.getTuples());
-        curPage= ((Vector)table.getPages().get(1));
-        p = x.deSerializePage((String)curPage.get(0));
-        System.out.println(p.getTuples());
-        curPage= ((Vector)table.getPages().get(2));
-        p = x.deSerializePage((String)curPage.get(0));
-        System.out.println(p.getTuples());
-        System.out.println("---------------------------");
 
-        Hashtable h466 = new Hashtable( );
-        h466.put("name",new Date (2012-1900,12-1,12) );
 
-        x.deleteFromTable("testdelete", h466);
+        //        Hashtable h48 = new Hashtable( );
+//        h48.put("id", new Integer(21));
+//        h48.put("name",new Date (2012-1900,12-1,12) );
+//        h48.put("gpa", new Double( 1.68 ) );
+//
+//        x.insertIntoTable("testdelete",h48);
+//
+//        Hashtable h49 = new Hashtable( );
+//        h49.put("id", new Integer(22));
+//        h49.put("name",new Date (2000-1900,9-1,7) );
+//        h49.put("gpa", new Double( 1.92 ) );
+//
+//        x.insertIntoTable("testdelete",h49);
+        //=============
+//
+
+//
 //        p = x.deSerializePage((String)curPage.get(0));
 //        System.out.println(p.getTuples());
 //        curPage= ((Vector)table.getPages().get(1));
 //        p = x.deSerializePage((String)curPage.get(0));
 //        System.out.println(p.getTuples());
-
-        for (int i=0; i<table.getPages().size(); i++){
-            curPage= ((Vector)table.getPages().get(i));
-            p = x.deSerializePage((String)curPage.get(0));
-            System.out.println(p.getTuples());
-        }
+//        curPage= ((Vector)table.getPages().get(2));
+//        p = x.deSerializePage((String)curPage.get(0));
+//        System.out.println(p.getTuples());
+//        System.out.println("---------------------------");
+//
+//        Hashtable h466 = new Hashtable( );
+//        h466.put("name",new Date (2012-1900,12-1,12) );
+//
+//        x.deleteFromTable("testdelete", h466);
+//        p = x.deSerializePage((String)curPage.get(0));
+//        System.out.println(p.getTuples());
+//        curPage= ((Vector)table.getPages().get(1));
+//        p = x.deSerializePage((String)curPage.get(0));
+//        System.out.println(p.getTuples());
 
 //        Hashtable h5 = new Hashtable( );
 ////        h5.put("id", new Integer(45));

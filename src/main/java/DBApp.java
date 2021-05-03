@@ -229,7 +229,7 @@ public class DBApp implements DBAppInterface{
                 p.setMin(r.getData().get(0).getValue());
                 p.setNoRows(p.getTuples().size());
                 serializePage(p,tableName+db.get(tableName).getPageID());
-                updateLocation(tableName+db.get(tableName).getPageID(),p,0);
+                updateLocation(tableName+db.get(tableName).getPageID(),p,0,false);
                 db.get(tableName).setPageID(db.get(tableName).getPageID()+1);
                 //System.out.println(curTable.getPages());
             }
@@ -269,7 +269,7 @@ public class DBApp implements DBAppInterface{
 //                    p.setNoRows(p.getTuples().size());
                 }
                 serializePage(p,(String)curPage.get(0));
-                updateLocation((String)curPage.get(0),p,indexP);
+                updateLocation((String)curPage.get(0),p,indexP,false);
 
             }
             if (flag){
@@ -283,13 +283,13 @@ public class DBApp implements DBAppInterface{
                         p.setMax(((Record)p.getTuples().get(p.getTuples().size()-1)).getData().get(0).getValue());
                         p.setNoRows(p.getTuples().size());
                         serializePage(p,(String)curPage.get(0));
-                        updateLocation((String)curPage.get(0),p,indexP);
+                        updateLocation((String)curPage.get(0),p,indexP,false);
                         pNext.insertRecord(shifter);
                         pNext.setMax(((Record)pNext.getTuples().get(pNext.getTuples().size()-1)).getData().get(0).getValue());
                         pNext.setMin(((Record)pNext.getTuples().get(0)).getData().get(0).getValue());
                         pNext.setNoRows(pNext.getTuples().size());
                         serializePage(pNext,(String)nextPage.get(0));
-                        updateLocation((String)nextPage.get(0),pNext,indexP+1);
+                        updateLocation((String)nextPage.get(0),pNext,indexP+1,false);
                         flag = false ;
                     }
 
@@ -304,13 +304,13 @@ public class DBApp implements DBAppInterface{
                         p.setMin(((Record)p.getTuples().get(0)).getData().get(0).getValue());
                         p.setNoRows(p.getTuples().size());
                         serializePage(p,(String)curPage.get(0));
-                        updateLocation((String)curPage.get(0),p,indexP);
+                        updateLocation((String)curPage.get(0),p,indexP,false);
                         pBack.insertRecord(shifter);
                         pBack.setMax(((Record)pBack.getTuples().get(pBack.getTuples().size()-1)).getData().get(0).getValue());
                         pBack.setMin(((Record)pBack.getTuples().get(0)).getData().get(0).getValue());
                         pBack.setNoRows(pBack.getTuples().size());
                         serializePage(pBack,(String)prevPage.get(0));
-                        updateLocation((String)prevPage.get(0),pBack,indexP-1);
+                        updateLocation((String)prevPage.get(0),pBack,indexP-1,false);
                         flag = false ;
                     }
 
@@ -324,7 +324,7 @@ public class DBApp implements DBAppInterface{
                 p.setMax(((Record)p.getTuples().get(p.getTuples().size()-1)).getData().get(0).getValue());
                 p.setNoRows(p.getTuples().size());
                 serializePage(p,(String)curPage.get(0));
-                updateLocation((String)curPage.get(0),p,indexP);
+                updateLocation((String)curPage.get(0),p,indexP,false);
                 try {
                     Page newP = new Page(tableName);
                     newP.getTuples().add(shifter);
@@ -332,7 +332,7 @@ public class DBApp implements DBAppInterface{
                     newP.setMin(shifter.getData().get(0).getValue());
                     newP.setNoRows(newP.getTuples().size());
                     serializePage(newP,tableName+db.get(tableName).getPageID());
-                    updateLocation(tableName+db.get(tableName).getPageID(),newP,indexP+1);
+                    updateLocation(tableName+db.get(tableName).getPageID(),newP,indexP+1,true);
                     db.get(tableName).setPageID(db.get(tableName).getPageID()+1);
                 }
                 catch (Exception e ){
@@ -533,7 +533,7 @@ public class DBApp implements DBAppInterface{
 
             ((Record) p.getTuples().get(indexR[0])).setData(oldV);
             serializePage(p,(String)curPage.get(0));
-            updateLocation((String)curPage.get(0),p,indexP);
+            updateLocation((String)curPage.get(0),p,indexP,false);
         }
 
     }
@@ -576,15 +576,38 @@ public class DBApp implements DBAppInterface{
                 throw new DBAppException("Record not found");
             }
             else{
+                for (int ii = 0 ;ii < r.getData().size();ii++){
+                    if (columnNameValue.containsKey(r.getData().get(ii).getKey())){
+                        if (!columnNameValue.get(r.getData().get(ii).getKey()).equals(r.getData().get(ii).getValue())){
+                            throw  new DBAppException("Criteria not met");
+                        }
+                    }
+                }
                 p.getTuples().remove(indexR[0]);
                 if(p.getTuples().size()==0){
                     db.get(tableName).getPages().remove(indexP);
+                    try
+                    {
+                        //Saving of object in a file
+                        FileOutputStream file = new FileOutputStream("src/main/resources/data/"+ tableName +".ser");
+                        ObjectOutputStream out = new ObjectOutputStream(file);
+                        // Method for serialization of object
+                        Vector pages = (Vector)db.get(tableName).getPages();
+                        out.writeObject(pages);
+                        out.close();
+                        file.close();
+//                        System.out.println("Object has been serialized");
+                    }
+                    catch(IOException ex)
+                    {
+                        ex.printStackTrace();
+                    }
                     File tbd = new File("src/main/resources/data/"+(String)curPage.get(0)+".ser");
                     tbd.delete();
                 }
                 else {
                     serializePage(p, (String) curPage.get(0));
-                    updateLocation((String) curPage.get(0), p, indexP);
+                    updateLocation((String) curPage.get(0), p, indexP,false);
                 }
             }
         }
@@ -596,12 +619,29 @@ public class DBApp implements DBAppInterface{
                 p.deleteRecord(r);
                 if(p.getTuples().size()==0){
                     db.get(tableName).getPages().remove(i);
+                    try
+                    {
+                        //Saving of object in a file
+                        FileOutputStream file = new FileOutputStream("src/main/resources/data/"+ tableName +".ser");
+                        ObjectOutputStream out = new ObjectOutputStream(file);
+                        // Method for serialization of object
+                        Vector pages = (Vector)db.get(tableName).getPages();
+                        out.writeObject(pages);
+                        out.close();
+                        file.close();
+//                System.out.println("Object has been serialized");
+                    }
+                    catch(IOException ex)
+                    {
+
+                        ex.printStackTrace();
+                    }
                     File tbd = new File("src/main/resources/data/"+(String)curPage.get(0)+".ser");
                     tbd.delete();
                 }
                 else {
                     serializePage(p, (String) curPage.get(0));
-                    updateLocation((String) curPage.get(0), p, i);
+                    updateLocation((String) curPage.get(0), p, i,false);
                 }
             }
         }
@@ -666,7 +706,9 @@ public class DBApp implements DBAppInterface{
     }
 
     //Method to update Page location
-    public void updateLocation(String location,Page page , int index){
+    public void updateLocation(String location,Page page , int index , boolean f){
+        //flag to create new page
+
         //Get Table
         DBTable curTable= db.get(page.getTable());
         Vector <Vector> pages= curTable.getPages();
@@ -676,11 +718,16 @@ public class DBApp implements DBAppInterface{
         pageInfo.add(page.getMin());
         pageInfo.add(curTable.getName());
         pageInfo.add(page.getTuples().size());
-        try {
-            pages.set(index, pageInfo);
+        pageInfo.add(db.get(page.getTable()).getPageID());
+        if (f){
+            pages.add(index ,pageInfo);
         }
-        catch (ArrayIndexOutOfBoundsException e){
-            pages.add(pageInfo);
+        else {
+            try {
+                pages.set(index, pageInfo);
+            } catch (ArrayIndexOutOfBoundsException e) {
+                pages.add(pageInfo);
+            }
         }
         try
         {
@@ -732,6 +779,13 @@ public class DBApp implements DBAppInterface{
 
             //add it to proper table
             db.get(tableName).setPages(pages);
+        int max = 0 ;
+        for (int i = 0 ; i <pages.size();i++){
+            if ((int)pages.get(i).get(5)>=max){
+                max = (int)pages.get(i).get(5);
+            }
+        }
+            db.get(tableName).setPageID(max+1);
         }
 
 
