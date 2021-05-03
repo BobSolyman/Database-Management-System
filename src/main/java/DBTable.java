@@ -8,7 +8,6 @@ public class DBTable<T extends Comparable <T>> implements Serializable {
     private int pageID;
     private String name;
     private String clusteringKey;
-    private Vector tuples;
     private Hashtable<String, String> colNameMin;
     private Hashtable<String, String> colNameMax;
     private Hashtable<String, String> colNameType;
@@ -101,20 +100,8 @@ public class DBTable<T extends Comparable <T>> implements Serializable {
         this.pages = pages;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public void setClusteringKey(String clusteringKey) {
         this.clusteringKey = clusteringKey;
-    }
-
-    public Vector getTuples() {
-        return tuples;
-    }
-
-    public void setTuples(Vector tuples) {
-        this.tuples = tuples;
     }
 
     public void setColNameMin(Hashtable<String, String> colNameMin) {
@@ -124,7 +111,6 @@ public class DBTable<T extends Comparable <T>> implements Serializable {
     public void setColNameMax(Hashtable<String, String> colNameMax) {
         this.colNameMax = colNameMax;
     }
-
 
     public String getName() {
         return name;
@@ -136,10 +122,6 @@ public class DBTable<T extends Comparable <T>> implements Serializable {
 
     public Hashtable<String, String> getColNameType() {
         return colNameType;
-    }
-
-    public void setColNameType(Hashtable<String, String> colNameType) {
-        this.colNameType = colNameType;
     }
 
     public Hashtable<String, String> getColNameMin() {

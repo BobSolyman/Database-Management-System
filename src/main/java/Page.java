@@ -6,7 +6,6 @@ import java.util.*;
 
 public class Page implements Serializable {
     private int noRows;
-    private Vector clusteringKey;
     private Vector <Record>tuples;
     private String table;
     private Object  min;
@@ -132,17 +131,11 @@ public class Page implements Serializable {
         this.max =  max;
     }
 
-    public int getNoRows() {
-        return noRows;
-    }
 
     public void setNoRows(int noRows) {
         this.noRows = noRows;
     }
 
-    public  void setMaxPage(int maxPage) {
-        Page.maxPage = maxPage;
-    }
 
     public  int getMaxPage() { return maxPage; }
 
@@ -150,21 +143,8 @@ public class Page implements Serializable {
         return tuples;
     }
 
-    public void setTuples(Vector tuples) {
-        this.tuples = tuples;
-    }
-
-    public Vector getClusteringKey() {
-        return clusteringKey;
-    }
-
-    public void setClusteringKey(Vector clusteringKey) {
-        this.clusteringKey = clusteringKey;
-    }
 
     public String getTable() { return table; }
-
-    public void setTable(String table) { this.table = table; }
 
     public static int readingFromConfigFile(String string) throws IOException {
         Properties prop = new Properties();

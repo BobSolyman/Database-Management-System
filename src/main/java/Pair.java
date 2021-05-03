@@ -9,9 +9,6 @@ public class Pair implements Serializable, Comparable {
         return key;
     }
 
-    public void setKey(String key) {
-        this.key = key;
-    }
 
     public Object getValue() {
         return value;

@@ -36,7 +36,10 @@ public class DBApp implements DBAppInterface{
         //check if row config exists
         //check if Db exists
         //we need to translate metadata into map (review)
-        HashMap<String,DBTable>  map;
+        File theDir = new File("src/main/resources/data");
+        if (!theDir.exists()) {
+            theDir.mkdirs();
+        }
         try {
             if(getFileSize("src/main/resources/metadata.csv")>0){
             db = getMap("src/main/resources/metadata.csv");
@@ -776,7 +779,7 @@ public class DBApp implements DBAppInterface{
         {
             System.out.println("ClassNotFoundException is caught");
         }
-
+            //ID = inc page + 1
             //add it to proper table
             db.get(tableName).setPages(pages);
         int max = 0 ;
