@@ -8,15 +8,18 @@ import java.util.*;
 public class DBApp implements DBAppInterface{
 
      private HashMap<String,DBTable> db= new HashMap();
-     private int maxTuples;
+     //Vector [Table,ColName,location]
+     private Vector indixes= new Vector();
+     private int bucketSize;
 
-    {
-        try {
-            maxTuples = Page.readingFromConfigFile("MaximumRowsCountinPage");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+
+//    {
+//        try {
+//            maxTuples = Page.readingFromConfigFile("MaximumRowsCountinPage");
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     public HashMap<String, DBTable> getDb() {
         return db;
@@ -36,6 +39,16 @@ public class DBApp implements DBAppInterface{
         //check if row config exists
         //check if Db exists
         //we need to translate metadata into map (review)
+        try {
+            Properties prop = new Properties();
+            FileInputStream property = new FileInputStream("src/main/resources/DBApp.config");
+            prop.load(property);
+            bucketSize = Integer.parseInt(prop.getProperty("MaximumKeysCountinIndexBucket"));
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
+
         File theDir = new File("src/main/resources/data");
         if (!theDir.exists()) {
             theDir.mkdirs();
@@ -65,7 +78,8 @@ public class DBApp implements DBAppInterface{
             System.out.println("NO PREVIOUS DB!!!");
             return;
         }
-
+        //load index location into memory
+        indixes= (Vector) deSerialize("index");
 
 
     }
@@ -209,7 +223,115 @@ public class DBApp implements DBAppInterface{
     }
 
     public void createIndex(String tableName, String[] columnNames) throws DBAppException {
-        //Milestone 2
+        //exceptions
+        if(tableName==null)
+            throw new DBAppException("TABLE MUST HAVE A NAME!!!");
+
+        //Table name doesn't exist
+        if(!db.containsKey(tableName))
+            throw new DBAppException("TABLE NAME NOT FOUND!!!");
+
+        //check colName exist
+        for(String columnName: columnNames){
+            if(!db.get(tableName).getColNameType().containsKey(columnName)){
+                throw new DBAppException("COLUMN DOES NOT EXIST!!!");
+            }
+        }
+
+        //handle order of columnNames for grid
+
+        DBTable currentTable= db.get(tableName);
+        Object clusteringKey=  currentTable.getClusteringKey();
+        Vector<Vector> pages= currentTable.getPages();
+        Hashtable<Vector,Vector<Bucket>> buckets =new Hashtable();
+        Vector<Bucket> bucketVector= new Vector<Bucket>();
+        Bucket bucket=new Bucket(tableName);
+        //when we create an index we return it to our list of indexes and then we serialize, Deserialize in init()
+        if(columnNames.length == 1){
+            //if it's one dimensional
+            if(columnNames[0].equals(clusteringKey)){
+                //unique
+                for(Vector page : pages){
+                    Page currentPage= deSerializePage((String) page.get(0));
+                    Vector tuples=currentPage.getTuples();
+                    int i=0;
+                    for(Object tuple : tuples){
+                        if(bucket.getSize()==bucketSize){
+                            bucketVector.add(bucket);
+                            bucket= new Bucket(tableName);
+                        }
+                        Hashtable<Object, Vector> keyValue= bucket.getKeyValue();
+                        Vector cur= new Vector();
+                        cur.add(currentPage);
+                        cur.add(i);
+                        keyValue.put(tuple,cur);
+                        bucket.incrementSize();
+                        i++;
+                        if(bucket.getSize()==1){
+                            bucket.setMax(tuple);
+                            bucket.setMin(tuple);
+                        }else if(bucket.getMax().compareTo(keyValue)){
+                            //Mahmoud.compareTo()
+                        }
+                    }
+                }
+            }
+            else{
+                //check for duplicates and null values
+                for(Vector page : pages){
+                    Page currentPage= deSerializePage((String) page.get(0));
+                    Vector tuples=currentPage.getTuples();
+                    int i=0;
+                    for(Object tuple : tuples){
+                        if(bucket.getSize()==bucketSize){
+                            bucketVector.add(bucket);
+                            bucket= new Bucket(tableName);
+                        }
+                        if(tuple == null) {
+                        continue;
+                        }
+                        Hashtable<Object, Vector> keyValue= bucket.getKeyValue();
+                        if(keyValue.containsKey(tuple)) {
+                            continue;
+                        }
+                        Vector cur= new Vector();
+                        cur.add(currentPage);
+                        cur.add(i);
+                        keyValue.put(tuple,cur);
+                        bucket.incrementSize();
+                        i++;
+                        if(bucket.getSize()==1){
+                            bucket.setMax(tuple);
+                            bucket.setMin(tuple);
+                        }else {
+                            if(bucket.getMax().compareTo(keyValue)){
+                            //Mahmoud.compareTo()
+                            }
+                            if(bucket.getMin().compareTo(keyValue)){
+                                //Mahmoud.compareTo()
+                            }
+                        }
+                    }
+                }
+            }
+       }else{
+            //multidimensional
+        }
+        Vector colNames= new Vector ();
+        String location= tableName;
+        for(String columnName :columnNames ){
+            colNames.add(columnName);
+            location+=columnName;
+        }
+        buckets.put(colNames,bucketVector);
+        Grid grid= new Grid(columnNames,buckets);
+        serialize(grid,location);
+        Vector index= new Vector();
+        index.add(tableName);
+        index.add(columnNames);
+        index.add(location);
+        indixes.add(index);
+        serialize(index,"index");
     }
 
     public void insertIntoTable(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException, ParseException {
@@ -679,6 +801,28 @@ public class DBApp implements DBAppInterface{
         }
     }
 
+    public void serialize(Object object, String filename){
+        try
+        {
+            //Saving of object in a file
+            FileOutputStream file = new FileOutputStream("src/main/resources/data/"+filename + ".ser");
+            ObjectOutputStream out = new ObjectOutputStream(file);
+
+            // Method for serialization of object
+            out.writeObject(object);
+
+            out.close();
+            file.close();
+
+//            System.out.println("Object has been serialized");
+        }
+
+        catch(IOException ex)
+        {
+            ex.printStackTrace();
+        }
+    }
+
     public Page deSerializePage(String filename){
         Page output = null;
 
@@ -690,6 +834,34 @@ public class DBApp implements DBAppInterface{
 
             // Method for deserialization of object
             output = (Page)in.readObject();
+
+            in.close();
+            file.close();
+
+//            System.out.println("Object has been deserialized ");
+        }
+
+        catch(IOException ex)
+        {
+            System.out.println("IOException is caught");
+        }
+        catch(ClassNotFoundException ex)
+        {
+            System.out.println("ClassNotFoundException is caught");
+        }
+        return output;
+    }
+    public Object deSerialize(String filename){
+        Object output = null;
+
+        try
+        {
+            // Reading the object from a file
+            FileInputStream file = new FileInputStream("src/main/resources/data/"+filename+".ser");
+            ObjectInputStream in = new ObjectInputStream(file);
+
+            // Method for deserialization of object
+            output = in.readObject();
 
             in.close();
             file.close();
@@ -916,231 +1088,6 @@ public void validate(String tableName, String clusteringKey, Hashtable<String, S
             throw new DBAppException("Table content mismatch");
     }
 }
-
-
-   // update specific cell in csv MAYBE
-//    public static void updateCSV(String fileToUpdate, String replace,
-//                                 int row, int col) throws IOException {
-//
-//        File inputFile = new File(fileToUpdate);
-//
-//// Read existing file
-//        CSVReader reader = new CSVReader(new FileReader(inputFile), ',');
-//        List<String[]> csvBody = reader.readAll();
-//// get CSV row column  and replace with by using row and column
-//        csvBody.get(row)[col] = replace;
-//        reader.close();
-//
-//// Write to CSV file which is open
-//        CSVWriter writer = new CSVWriter(new FileWriter(inputFile), ',');
-//        writer.writeAll(csvBody);
-//        writer.flush();
-//        writer.close();
-//    }
-
-    //       else{
-//            //LOOP AND CHECK TYPE AND LOCATION THEN INSERT AND RETURN, IF NO LOOP ENDED WITHOUT RETURNING THEN NEW PAGE
-//            for (int i = 0; i < curTable.getPages().size(); i++) {
-//                Vector curPage= ((Vector)curTable.getPages().get(i));
-//                Object max= curPage.get(1);
-//                Object min= curPage.get(2);
-//                Page p = null;
-//                if(max instanceof Integer){
-//                    //check if page has space
-//                    if(((Integer)curPage.get(4)).compareTo(maxTuples)<0){
-//                    //value in the middle
-//                    if(((Integer)max).compareTo((Integer)curKey)>=0 && (((Integer)min).compareTo((Integer)curKey))<=0){
-//                            p = deSerializePage((String) curPage.get(0));
-//                            Record r = new Record(colNameValue,(String) clusteringKey);
-//                            if(p.getTuples().contains(r)){
-//                                throw new DBAppException("Clustering Key already exists in table");
-//                            }
-//                            p.insertRecord(r);
-//                            serializePage(p,(String) curPage.get(0));
-//                            ((String) curPage.get(0),p);
-//                            return;
-//                    //value is new max
-//                    }else  if(((Integer)max).compareTo((Integer)curKey)<0 ){
-//                        p= deSerializePage((String) curPage.get(0));
-//                        p.setMax(curKey);
-//                        Record r = new Record(colNameValue,(String) clusteringKey);
-//                        p.insertRecord(r);
-//                        serializePage(p,(String) curPage.get(0));
-//                        updateLocation((String) curPage.get(0),p);
-//                        return;
-//                     //value is new min
-//                    }else if((((Integer)min).compareTo((Integer)curKey))>0){
-//                        p= deSerializePage((String) curPage.get(0));
-//                        p.setMin(curKey);
-//                        Record r = new Record(colNameValue,(String) clusteringKey);
-//                        p.insertRecord(r);
-//                        serializePage(p,(String) curPage.get(0));
-//                        updateLocation((String) curPage.get(0),p);
-//                        return;
-//                    }
-//                    }
-//                }
-//                if(max instanceof Double){
-//                    //check if page has space
-//                    if(((Integer)curPage.get(4)).compareTo(maxTuples)<0){
-//                        //value in the middle
-//                        if(((Double)max).compareTo((Double)curKey)>=0 && (((Double)min).compareTo((Double)curKey))<=0){
-//                            p = deSerializePage((String) curPage.get(0));
-//                            Record r = new Record(colNameValue,(String) clusteringKey);
-//                            if(p.getTuples().contains(r)){
-//                                throw new DBAppException("Clustering Key already exists in table");
-//                            }
-//                            p.insertRecord(r);
-//                            serializePage(p,(String) curPage.get(0));
-//                            updateLocation((String) curPage.get(0),p);
-//                            return;
-//                            //value is new max
-//                        }else  if(((Double)max).compareTo((Double)curKey)<0 ){
-//                            p= deSerializePage((String) curPage.get(0));
-//                            p.setMax(curKey);
-//                            Record r = new Record(colNameValue,(String) clusteringKey);
-//                            p.insertRecord(r);
-//                            serializePage(p,(String) curPage.get(0));
-//                            updateLocation((String) curPage.get(0),p);
-//                            return;
-//                            //value is new min
-//                        }else if((((Double)min).compareTo((Double)curKey))>0){
-//                            p= deSerializePage((String) curPage.get(0));
-//                            p.setMin(curKey);
-//                            Record r = new Record(colNameValue,(String) clusteringKey);
-//                            p.insertRecord(r);
-//                            serializePage(p,(String) curPage.get(0));
-//                            updateLocation((String) curPage.get(0),p);
-//                            return;
-//                        }
-//                    }
-//                }
-//                if(max instanceof String){
-//                    //check if page has space
-//                    if(((Integer)curPage.get(4)).compareTo(maxTuples)<0){
-//                        //value in the middle
-//                        if(((String)max).compareTo((String)curKey)>=0 && (((String)min).compareTo((String)curKey))<=0){
-//                            p = deSerializePage((String) curPage.get(0));
-//                            Record r = new Record(colNameValue,(String) clusteringKey);
-//                            if(p.getTuples().contains(r)){
-//                                throw new DBAppException("Clustering Key already exists in table");
-//                            }
-//                            p.insertRecord(r);
-//                            serializePage(p,(String) curPage.get(0));
-//                            updateLocation((String) curPage.get(0),p);
-//                            return;
-//                            //value is new max
-//                        }else  if(((String)max).compareTo((String)curKey)<0 ){
-//                            p= deSerializePage((String) curPage.get(0));
-//                            p.setMax(curKey);
-//                            Record r = new Record(colNameValue,(String) clusteringKey);
-//                            p.insertRecord(r);
-//                            serializePage(p,(String) curPage.get(0));
-//                            updateLocation((String) curPage.get(0),p);
-//                            return;
-//                            //value is new min
-//                        }else if((((String)min).compareTo((String)curKey))>0){
-//                            p= deSerializePage((String) curPage.get(0));
-//                            p.setMin(curKey);
-//                            Record r = new Record(colNameValue,(String) clusteringKey);
-//                            p.insertRecord(r);
-//                            serializePage(p,(String) curPage.get(0));
-//                            updateLocation((String) curPage.get(0),p);
-//                            return;
-//                        }
-//                    }
-//                }
-//                if(max instanceof Date){
-//                    //check if page has space
-//                    if(((Integer)curPage.get(4)).compareTo(maxTuples)<0){
-//                        //value in the middle
-//                        if(((Date)max).compareTo((Date)curKey)>=0 && (((Date)min).compareTo((Date)curKey))<=0){
-//                            p = deSerializePage((String) curPage.get(0));
-//                            Record r = new Record(colNameValue,(String) clusteringKey);
-//                            if(p.getTuples().contains(r)){
-//                                throw new DBAppException("Clustering Key already exists in table");
-//                            }
-//                            p.insertRecord(r);
-//                            serializePage(p,(String) curPage.get(0));
-//                            updateLocation((String) curPage.get(0),p);
-//                            return;
-//                            //value is new max
-//                        }else  if(((Date)max).compareTo((Date)curKey)<0 ){
-//                            p= deSerializePage((String) curPage.get(0));
-//                            p.setMax(curKey);
-//                            Record r = new Record(colNameValue,(String) clusteringKey);
-//                            p.insertRecord(r);
-//                            serializePage(p,(String) curPage.get(0));
-//                            updateLocation((String) curPage.get(0),p);
-//                            return;
-//                            //value is new min
-//                        }else if((((Date)min).compareTo((Date)curKey))>0){
-//                            p= deSerializePage((String) curPage.get(0));
-//                            p.setMin(curKey);
-//                            Record r = new Record(colNameValue,(String) clusteringKey);
-//                            p.insertRecord(r);
-//                            serializePage(p,(String) curPage.get(0));
-//                            updateLocation((String) curPage.get(0),p);
-//                            return;
-//                        }
-//                    }
-//                }
-//            }
-//            //PAGES FULL CREATE A NEW ONE
-//            try {
-//                Page p = new Page(tableName);
-//                p.setMax(curKey);
-//                p.setMin(curKey);
-//                Record r = new Record(colNameValue,(String) clusteringKey);
-//                p.insertRecord(r);
-//                serializePage(p,tableName+curTable.getPages().size());
-//                updateLocation(tableName+curTable.getPages().size(),p);
-//                //System.out.println(curTable.getPages());
-//            }
-//            catch(IOException e){
-//                e.printStackTrace();
-//            }
-//        }
-
-
-
-
-
-            /// to defrag all pages and shift
-
-//            while (flag && ++indexP < curTable.getPages().size()){
-//
-//                    curPage= ((Vector)curTable.getPages().get(indexP));
-//                    p = deSerializePage((String)curPage.get(0));
-//                    p.getTuples().add(0,shifter);
-//                    p.setMax(((Record)p.getTuples().get(p.getTuples().size()-1)).getData().get(0).getValue());
-//                    p.setMin(((Record)p.getTuples().get(0)).getData().get(0).getValue());
-//                    p.setNoRows(p.getTuples().size());
-//                    if (p.getTuples().size()<=p.getMaxPage()){
-//                         flag = false ;
-//                         p.setMax(((Record)p.getTuples().get(p.getTuples().size()-1)).getData().get(0).getValue());
-//                         p.setNoRows(p.getTuples().size());
-//                         serializePage(p,(String)curPage.get(0));
-//                         updateLocation((String)curPage.get(0),p,indexP);
-//                         break;
-//                        }
-//                    shifter = (Record)p.getTuples().get(p.getTuples().size()-1);
-//                    p.getTuples().remove(shifter);
-//                    p.setMax(((Record)p.getTuples().get(p.getTuples().size()-1)).getData().get(0).getValue());
-//                    p.setNoRows(p.getTuples().size());
-//
-//                    serializePage(p,(String)curPage.get(0));
-//                    updateLocation((String)curPage.get(0),p,indexP);
-//
-//
-//            }
-
-
-
-
-
-
-
 
 
 
