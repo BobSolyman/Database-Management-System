@@ -241,6 +241,7 @@ public class DBApp implements DBAppInterface{
         //handle order of columnNames for grid
 
         DBTable currentTable= db.get(tableName);
+        Grid grid= new Grid(columnNames,currentTable.getColNameMin(),currentTable.getColNameMax(),currentTable.getColNameType());
         Object clusteringKey=  currentTable.getClusteringKey();
         Vector<Vector> pages= currentTable.getPages();
         Hashtable<Vector,Vector<Bucket>> buckets =new Hashtable();
@@ -305,7 +306,7 @@ public class DBApp implements DBAppInterface{
                             bucket.setMin(tuple);
                         }else {
                             if(bucket.getMax().compareTo(keyValue)){
-                            //Mahmoud.compareTo()
+                                //Mahmoud.compareTo()
                             }
                             if(bucket.getMin().compareTo(keyValue)){
                                 //Mahmoud.compareTo()
@@ -324,7 +325,7 @@ public class DBApp implements DBAppInterface{
             location+=columnName;
         }
         buckets.put(colNames,bucketVector);
-        Grid grid= new Grid(columnNames,buckets);
+
         serialize(grid,location);
         Vector index= new Vector();
         index.add(tableName);

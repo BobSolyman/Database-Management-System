@@ -6,12 +6,24 @@ public class Grid {
     private String[] columns;
     //key -> values--> <v1,X2>-->bucket
     private Hashtable<Vector, Vector<Bucket>> buckets;
+    //[X,Y,Z...]
+    private Hashtable<String,Object> range;
+    private Hashtable<String,Object> min;
+    private Hashtable<String,Object> max;
+    private Hashtable<String,String> type;
+
+
     //multiple variations can point to the same bucket!
 
-    public Grid(String[] columns, Hashtable<Vector, Vector<Bucket>> buckets) {
+    public Grid(String[] columns, Hashtable<String, Object> min, Hashtable<String, Object> max, Hashtable<String, String> type) {
         this.columns = columns;
-        this.buckets = buckets;
+        this.buckets = new Hashtable();
+        this.range = new Hashtable();
+        this.min = min;
+        this.max = max;
+        this.type = type;
     }
+
 
     public String[] getColumns() {
         return columns;
