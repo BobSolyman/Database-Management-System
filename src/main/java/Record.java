@@ -6,6 +6,7 @@ import java.util.Vector;
 public class Record implements Comparable, Serializable {
 
      private Vector <Pair> data ;
+     private Hashtable<String,Object> content ;
 
     public Vector<Pair> getData() {
         return data;
@@ -21,6 +22,14 @@ public class Record implements Comparable, Serializable {
                 '}';
     }
 
+    public Hashtable<String, Object> getContent() {
+        return content;
+    }
+
+    public void setContent(Hashtable<String, Object> content) {
+        this.content = content;
+    }
+
     public Record(Hashtable<String, Object> h , String cKey) {
         Pair Primary = null ;
         this.data = new Vector<>();
@@ -33,6 +42,7 @@ public class Record implements Comparable, Serializable {
         }
         if(Primary!=null)
             data.add(0,Primary);
+        content = h ;
     }
 
     @Override

@@ -1,6 +1,7 @@
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -22,7 +23,7 @@ public class test {
         htblColNameMax.put("name", "zzzzzzzzz");
         htblColNameMax.put("gpa", "999.999");
 //        x.createTable( "test", "id", htblColNameType,htblColNameMin,htblColNameMax );
-        DBTable table = x.getDb().get((String)"test");
+//        DBTable table = x.getDb().get((String)"test");
 //        Vector pages = table.getPages();
 //        System.out.println(pages);
 //        System.out.println(x.getDb().get((String)"testDate").getPages().size());
@@ -117,17 +118,37 @@ public class test {
 //        x.deleteFromTable("test",h43);
 
 
-        table = x.getDb().get((String)"test");
+//        table = x.getDb().get((String)"test");
 
-        Vector curPage= ((Vector)table.getPages().get(0));
-        Page p = null;
-        System.out.println(table.getPageID());
-        for (int i=0; i<table.getPages().size(); i++){
-            curPage= ((Vector)table.getPages().get(i));
-//            System.out.println(curPage.get(0));
-            p = x.deSerializePage((String)curPage.get(0));
-            System.out.println(p.getTuples());
-        }
+//        Vector curPage= ((Vector)table.getPages().get(0));
+//        Page p = null;
+//        System.out.println(table.getPageID());
+//        for (int i=0; i<table.getPages().size(); i++){
+//            curPage= ((Vector)table.getPages().get(i));
+////            System.out.println(curPage.get(0));
+//            p = x.deSerializePage((String)curPage.get(0));
+//            System.out.println(p.getTuples());
+//        }
+        String a = "aaa";
+
+        byte [] aa = a.getBytes(StandardCharsets.UTF_8);
+        String z = "zzzz";
+        byte [] zz = z.getBytes(StandardCharsets.UTF_8);
+        byte [] res = new byte [aa.length];
+        int jump = (int)zz[0]-(int)aa[0];
+
+
+            int r = (10-1)/9 ;
+        System.out.println(r);
+
+
+//        for (int j = 0 ;j <12 ;j++){
+//            for ( int i = 0 ; i < aa.length;i++){
+//                res[i]=(byte)(aa[i]+(((int)zz[i] - (int)aa[i])/10*j));
+//
+//            }
+//            System.out.println(new String(res));
+//        }
 
 
 
