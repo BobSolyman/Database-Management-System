@@ -1,16 +1,19 @@
+import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.*;
+import java.util.Date;
 
-public class Grid {
+public class Grid implements Serializable {
     // V,X
     private Vector<String> columns;
     //key -> values--> <v1,X2>-->bucket
-    private Hashtable<Vector, Vector<Bucket>> buckets;
+    private Hashtable<Vector, String> buckets;
     //[X,Y,Z...]
     private Hashtable<String,Object> range;
     private Hashtable<String,Object> min;
     private Hashtable<String,Object> max;
     private Hashtable<String,String> type;
-
+    private String gridID ;
 
     //multiple variations can point to the same bucket!
 
@@ -23,6 +26,8 @@ public class Grid {
         this.min = mi;
         this.max = ma;
         this.type = t;
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        gridID = timestamp.toString() ;
 
         for (String col : this.columns){
             if (((String)type.get(col)).equals("java.lang.Integer")){
@@ -95,6 +100,9 @@ public class Grid {
      return res ;
     }
 
+    public String getGridID() {
+        return gridID;
+    }
 
     public Vector<String> getColumns() {
         return columns;
@@ -104,11 +112,12 @@ public class Grid {
         this.columns = columns;
     }
 
-    public Hashtable<Vector, Vector<Bucket>> getBuckets() {
+    public Hashtable<Vector, String> getBuckets() {
         return buckets;
     }
 
-    public void setBuckets(Hashtable<Vector, Vector<Bucket>> buckets) {
+    public void setBuckets(Hashtable<Vector, String> buckets)
+    {
         this.buckets = buckets;
     }
 

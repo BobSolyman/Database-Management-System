@@ -254,10 +254,57 @@ public class DBApp implements DBAppInterface{
                 Vector<Integer> loc = grid.getIndex(r);
                 bucketEntry bE = new bucketEntry(r,(String) page.get(0));
                 if (grid.getBuckets().containsKey(loc)){
+                    vecBucket vB = (vecBucket) deSerialize(grid.getGridID()+loc.toString());
+                    int indexB = vB.searchBuckets(bE);
+                    Bucket b = vB.getBuckets().get(indexB);
+                    int indexBE = b.searchBucketEntry(bE);
+                    b.getEntries().add(indexBE, bE);
+                    b.updateMinMax(bE);
+                    if(b.getEntries().size()>b.getMaxBucket()){
+                        boolean flag = false;
+                        for(int i=indexB; i<vB.getBuckets().size()-1; i++){
+                            bucketEntry lastBE = vB.getBuckets().get(indexB).getEntries().get(vB.getBuckets().get(indexB).getEntries().size()-1);
+                            Bucket bb = vB.getBuckets().get(indexB+1);
+                            bb.getEntries().add(bb.searchBucketEntry(lastBE), lastBE);
+                            bb.updateMinMax(lastBE);
+                            if(bb.getEntries().size()<=bb.getMaxBucket()){
+                                flag = true;
+                                break;
+                            }
+                        }
+                        if(!flag){
+                            bucketEntry lastBE = vB.getBuckets().get(vB.getBuckets().size()-1).getEntries().get(vB.getBuckets().get(vB.getBuckets().size()-1).getEntries().size()-1);
+                            Bucket bb = null;
+                            try {
+                                bb = new Bucket(grid.getType(), grid.getColumns());
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            bb.getEntries().add(0, lastBE);
+                            bb.updateMinMax(lastBE);
+                            vB.getBuckets().add(bb);
+                        }
+                    }
+                    grid.getBuckets().put(loc,vB.getBucketID());
+                    serialize(vB,vB.getBucketID());
                     // we need to start handling the overflow buckets !!!
                 }
                 else {
                     //we need to create our first bucket here :)
+                    vecBucket vB = new vecBucket(grid.getGridID()+loc.toString(), grid.getColumns(), grid.getType());
+                    try {
+                        Bucket b = new Bucket(grid.getType(), grid.getColumns());
+                        b.getEntries().add(bE);
+                        b.updateMinMax(bE);
+                        vB.getBuckets().add(b);
+
+                        grid.getBuckets().put(loc,vB.getBucketID());
+                        serialize(vB,vB.getBucketID());
+
+                    }
+                    catch (IOException e){
+                    }
+
 
                 }
 

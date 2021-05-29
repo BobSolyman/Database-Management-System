@@ -1,68 +1,173 @@
 import java.io.FileInputStream;
-import java.util.Hashtable;
-import java.util.Properties;
-import java.util.Vector;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.*;
 
-public class Bucket {
+public class Bucket implements Serializable {
     //POS 0 PAGE POS 1 ROW [POS0,POS1]
     //if single secondary Vector of vectors sorted
-    private Hashtable<Object, Vector> keyValue;
-    private String tableName;
-    private Object min;
-    private Object max;
-    private int size;
+    private Vector<bucketEntry> entries ;
+    private static int maxBucket;
+    private Hashtable<String,Object> min;
+    private Hashtable<String,Object> max;
+    private Hashtable<String,String> type;
+    private Vector<String> columns;
 
-    public Bucket(String tableName) {
-        this.keyValue = new Hashtable<Object,Vector>();
-        this.tableName = tableName;
-        int size=0;
+
+
+    public Bucket(Hashtable<String, String> type, Vector<String> columns) throws IOException {
+        this.entries = new Vector<bucketEntry>();
+        this.type = type;
+        this.min = new Hashtable<>();
+        this.max = new Hashtable<>();
+        this.columns = columns;
+        this.maxBucket= Page.readingFromConfigFile("MaximumKeysCountinIndexBucket");
     }
 
-    public Hashtable<Object, Vector> getKeyValue() {
-        return keyValue;
+    public void updateMinMax (bucketEntry x){
+        // use it every time with insertion
+        Hashtable<String, Object> r = x.getRow().getContent();
+        for(Map.Entry m : r.entrySet()){
+            if(min.containsKey(m.getKey())){
+                if (((String)type.get(m.getKey())).equals("java.lang.Integer")){
+                    if((Integer)min.get(m.getKey())>(Integer)m.getValue()){
+                        min.put((String)m.getKey(), m.getValue());
+                    }
+                    if((Integer)max.get(m.getKey())<(Integer)m.getValue()){
+                        max.put((String)m.getKey(), m.getValue());
+                    }
+                }
+                else if (((String)type.get(m.getKey())).equals("java.lang.Double")){
+                    if((Double)min.get(m.getKey())>(Double) m.getValue()){
+                        min.put((String)m.getKey(), m.getValue());
+                    }
+                    if((Double)max.get(m.getKey())<(Double)m.getValue()){
+                        max.put((String)m.getKey(), m.getValue());
+                    }
+                }
+                else if (((String)type.get(m.getKey())).equals("java.util.Date")){
+                    if(((Date)min.get(m.getKey())).compareTo((Date)m.getValue())>0){
+                        min.put((String)m.getKey(), m.getValue());
+                    }
+                    if(((Date)max.get(m.getKey())).compareTo((Date)m.getValue())<0){
+                        max.put((String)m.getKey(), m.getValue());
+                    }
+
+
+
+                }else if (((String)type.get(m.getKey())).equals("java.lang.String")){
+                    if(((String)min.get(m.getKey())).compareTo((String) m.getValue())>0){
+                        min.put((String)m.getKey(), m.getValue());
+                    }
+                    if(((String)max.get(m.getKey())).compareTo((String)m.getValue())<0){
+                        max.put((String)m.getKey(), m.getValue());
+                    }
+                }
+            }
+        }
     }
 
-    public void setSize(int count) {
-        this.size = count;
+    public int searchBucketEntry(bucketEntry bE){
+        int i = 0;
+
+
+
+        Comparator<bucketEntry> c = new Comparator<bucketEntry>() {
+            public int compare(bucketEntry u1, bucketEntry u2)
+            {
+                for(String col : columns) {
+                    String t = type.get(col);
+                    if (t.equals("java.lang.Integer")) {
+
+                        Integer min1 = (int) u1.getRow().getContent().get(col);
+                        Integer min2 = (int) u2.getRow().getContent().get(col);
+                        if(min1.compareTo(min2)==0){
+                            continue;
+                        }
+                        return min1.compareTo(min2);
+                    } else if (t.equals("java.lang.Double")) {
+                        Double min1 = (double) u1.getRow().getContent().get(col);
+                        Double min2 = (double) u2.getRow().getContent().get(col);
+                        if(min1.compareTo(min2)==0){
+                            continue;
+                        }
+                        return min1.compareTo(min2);
+                    } else if (t.equals("java.util.Date")) {
+                        Date min1 = (Date) u1.getRow().getContent().get(col);
+                        Date min2 = (Date) u2.getRow().getContent().get(col);
+                        if(min1.compareTo(min2)==0){
+                            continue;
+                        }
+                        return min1.compareTo(min2);
+                    } else {
+                        String min1 = (String) u1.getRow().getContent().get(col);
+                        String min2 = (String) u2.getRow().getContent().get(col);
+                        if(min1.compareTo(min2)==0){
+                            continue;
+                        }
+                        return min1.compareTo(min2);
+
+                    }
+                }
+                return 0;
+
+            }};
+        i = Collections.binarySearch(this.getEntries(),bE,c);
+        if (i == -1){
+            i = 0;
+        }
+        else if (i < 0){
+            i = Math.abs(i+1)-1;
+
+        }
+
+
+
+        return i;
     }
 
-    public void incrementSize() {
-        this.size++;
-    }
 
-    public void decrementSize() {
-        this.size--;
-    }
-
-    public String getTableName() {
-        return tableName;
-    }
-
-    public Object getMin() {
+    public Hashtable<String, Object> getMin() {
         return min;
     }
 
-    public void setKeyValue(Hashtable<Object, Vector> keyValue) {
-        this.keyValue = keyValue;
-    }
-
-    public void setTableName(String tableName) {
-        this.tableName = tableName;
-    }
-
-    public void setMin(Object min) {
+    public void setMin(Hashtable<String, Object> min) {
         this.min = min;
     }
 
-    public void setMax(Object max) {
-        this.max = max;
-    }
-
-    public Object getMax() {
+    public Hashtable<String, Object> getMax() {
         return max;
     }
 
-    public int getSize() {
-        return size;
+    public void setMax(Hashtable<String, Object> max) {
+        this.max = max;
+    }
+
+    public Hashtable<String, String> getType() {
+        return type;
+    }
+
+    public void setType(Hashtable<String, String> type) {
+        this.type = type;
+    }
+
+    public Vector<bucketEntry> getEntries() {
+        return entries;
+    }
+
+    public void setEntries(Vector<bucketEntry> entries) {
+        this.entries = entries;
+    }
+
+    public int getMaxBucket() {
+        return maxBucket;
+    }
+
+    public Vector<String> getColumns() {
+        return columns;
+    }
+
+    public void setColumns(Vector<String> columns) {
+        this.columns = columns;
     }
 }

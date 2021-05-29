@@ -2,6 +2,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -129,17 +130,17 @@ public class test {
 //            p = x.deSerializePage((String)curPage.get(0));
 //            System.out.println(p.getTuples());
 //        }
-        String a = "aaa";
-
-        byte [] aa = a.getBytes(StandardCharsets.UTF_8);
-        String z = "zzzz";
-        byte [] zz = z.getBytes(StandardCharsets.UTF_8);
-        byte [] res = new byte [aa.length];
-        int jump = (int)zz[0]-(int)aa[0];
-
-
-            int r = (10-1)/9 ;
-        System.out.println(r);
+//        String a = "aaa";
+//
+//        byte [] aa = a.getBytes(StandardCharsets.UTF_8);
+//        String z = "zzzz";
+//        byte [] zz = z.getBytes(StandardCharsets.UTF_8);
+//        byte [] res = new byte [aa.length];
+//        int jump = (int)zz[0]-(int)aa[0];
+//
+//
+//            int r = (10-1)/9 ;
+//        System.out.println(r);
 
 
 //        for (int j = 0 ;j <12 ;j++){
@@ -357,6 +358,18 @@ public class test {
 //        Vector c= new Vector();
 //        c.add(a);
        // System.out.println("B".compareTo("A"));
+
+//     Page p = new Page("lol");
+//        Hashtable h6 = new Hashtable( );
+//        h6.put("id", new Integer(55));
+//        h6.put("name", new String("six" ) );
+//        h6.put("gpa", new Double( 6 ) );
+//     Record r = new Record(h6,"id");
+//     p.insertRecord(r);
+//     x.serializePage(p,"lol");
+//     bucketEntry bE = new bucketEntry(r,"lol");
+//     x.serialize(bE,"bElol");
+//        System.out.println(bE.getRow());
 
 
 

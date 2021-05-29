@@ -1,4 +1,6 @@
-public class bucketEntry {
+import java.io.Serializable;
+
+public class bucketEntry implements Serializable {
     private  Record row ;
     private  String pageLoc ;
 
