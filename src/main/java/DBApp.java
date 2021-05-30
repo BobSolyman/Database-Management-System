@@ -285,7 +285,7 @@ public class DBApp implements DBAppInterface{
                     }
                     grid.getBuckets().put(loc,vB.getBucketID());
                     serialize(vB,vB.getBucketID());
-                    // we need to start handling the overflow buckets !!!
+                    // handling the overflow buckets !!!
                 }
                 else {
                     //we need to create our first bucket here :)
@@ -303,104 +303,17 @@ public class DBApp implements DBAppInterface{
                     catch (IOException e){
                     }
 
-
                 }
 
             }
 
-
-
-
         }
+        // saving the grid and serializing it
 
 
 
-        //when we create an index we return it to our list of indexes and then we serialize, Deserialize in init()
-//        if(columnNames.length == 1){
-//            //if it's one dimensional
-//            if(columnNames[0].equals(clusteringKey)){
-//                //unique
-///////////////////////////////
-//                    int i=0;
-//                    for(Object tuple : tuples){
-//                        if(bucket.getSize()==bucketSize){
-//                            bucketVector.add(bucket);
-//                            bucket= new Bucket(tableName);
-//                        }
-//                        Hashtable<Object, Vector> keyValue= bucket.getKeyValue();
-//                        Vector cur= new Vector();
-//                        cur.add(currentPage);
-//                        cur.add(i);
-//                        keyValue.put(tuple,cur);
-//                        bucket.incrementSize();
-//                        i++;
-//                        if(bucket.getSize()==1){
-//                            bucket.setMax(tuple);
-//                            bucket.setMin(tuple);
-//                        }
-////                        else if(bucket.getMax().compareTo(keyValue)){
-////                            //Mahmoud.compareTo()
-////                        }
-//                    }
-//                }
-//            }
-//            else{
-//                //check for duplicates and null values
-//                for(Vector page : pages){
-//                    Page currentPage= deSerializePage((String) page.get(0));
-//                    Vector tuples=currentPage.getTuples();
-//                    int i=0;
-//                    for(Object tuple : tuples){
-//                        if(bucket.getSize()==bucketSize){
-//                            bucketVector.add(bucket);
-//                            bucket= new Bucket(tableName);
-//                        }
-//                        if(tuple == null) {
-//                        continue;
-//                        }
-//                        Hashtable<Object, Vector> keyValue= bucket.getKeyValue();
-//                        if(keyValue.containsKey(tuple)) {
-//                            continue;
-//                        }
-//                        Vector cur= new Vector();
-//                        cur.add(currentPage);
-//                        cur.add(i);
-//                        keyValue.put(tuple,cur);
-//                        bucket.incrementSize();
-//                        i++;
-//                        if(bucket.getSize()==1){
-//                            bucket.setMax(tuple);
-//                            bucket.setMin(tuple);
-//                        }else {
-////                            if(bucket.getMax().compareTo(keyValue)){
-////                                //Mahmoud.compareTo()
-////                            }
-////                            if(bucket.getMin().compareTo(keyValue)){
-////                                //Mahmoud.compareTo()
-////                            }
-//                        }
-//                    }
-//                }
-//            }
-//       }else{
-//            //multidimensional
-//        }
-//        Vector colNames= new Vector ();
-//        String location= tableName;
-//        for(String columnName :columnNames ){
-//            colNames.add(columnName);
-//            location+=columnName;
-//        }
-//        buckets.put(colNames,bucketVector);
-//
-//        serialize(grid,location);
-//        Vector index= new Vector();
-//        index.add(tableName);
-//        index.add(columnNames);
-//        index.add(location);
-//        indixes.add(index);
-//        serialize(index,"index");
-    }
+
+    }// end of method
 
     public void insertIntoTable(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException, ParseException {
 
