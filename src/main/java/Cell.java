@@ -2,7 +2,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
-public class vecBucket implements Serializable {
+public class Cell implements Serializable {
 
     private  String bucketID ;
     private Vector<Bucket> Buckets ;
@@ -17,7 +17,7 @@ public class vecBucket implements Serializable {
         this.type = type;
     }
 
-    public vecBucket(String bucketID, Vector<String> columns, Hashtable<String,String> type) {
+    public Cell(String bucketID, Vector<String> columns, Hashtable<String,String> type ) {
         this.bucketID = bucketID;
         Buckets = new Vector<Bucket>();
         this.columns = columns;

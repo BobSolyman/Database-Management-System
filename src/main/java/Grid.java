@@ -8,6 +8,7 @@ public class Grid implements Serializable {
     private Vector<String> columns;
     //key -> values--> <v1,X2>-->bucket
     private Hashtable<Vector, String> buckets;
+    private Hashtable <String , Vector<Object>> cellRange ;
     //[X,Y,Z...]
     private Hashtable<String,Object> range;
     private Hashtable<String,Object> min;
@@ -45,7 +46,46 @@ public class Grid implements Serializable {
 
 
             }else if (((String)type.get(col)).equals("java.lang.String")){
-                // to be HANDLED
+                long noComb = 1;
+                long res = 0 ;
+                int maxlen = ((String) max.get(col)).length();
+                int minlen = ((String) min.get(col)).length();
+                boolean flag = true ;
+                for(int j = minlen ; j <= maxlen; j++) {
+                    for (int i = 0; i < j; i++) {
+                        flag = true;
+                        if (i < ((String) min.get(col)).length()) {
+                            int diff = (int) ((String) max.get(col)).charAt(i) - (int) ((String) min.get(col)).charAt(i);
+                            if (((String) min.get(col)).charAt(i)>='0' && ((String) min.get(col)).charAt(i)<='9'){
+                                flag = false;
+                            }
+                            if (diff < 0 ) {
+                                if (flag) {
+                                    diff = diff + 26;
+                                }
+                                else {
+                                    diff = diff + 10 ;
+                                }
+                            }
+                            else if (diff == 0) {
+                                diff = 1;
+                            }
+                            noComb = noComb * diff;
+                        } else {
+                            if (flag) {
+                                noComb = noComb * 26;
+                            }
+                            else {
+                                noComb = noComb * 10;
+                            }
+                        }
+                    }
+                    res = noComb + res ;
+                    noComb = 1 ;
+                }
+                res = res/9;
+                range.put(col,res);
+
             }
 
 
@@ -90,12 +130,57 @@ public class Grid implements Serializable {
                 res.add(i);
 
             }else if (((String)type.get(col)).equals("java.lang.String")){
-                // to be HANDLED
+                int i = 0;
+                if(r.getContent().containsKey(col)) {
+                    String s = (String) r.getContent().get(col);
+                    long noComb = 1;
+                    long result = 0 ;
+                    boolean flag = true ;
+                    int maxlen = s.length();
+                    int minlen = ((String) min.get(col)).length();
+                    for(int j = minlen ; j <= maxlen; j++) {
+                        for (int k = 0; k < j; k++) {
+                            flag=true;
+                            if (k < ((String) min.get(col)).length()) {
+                                int diff = (int) s.charAt(k) - (int) ((String) min.get(col)).charAt(k);
+                                if (s.charAt(k)>='0' && s.charAt(k)<='9'){
+                                    flag = false;
+                                }
+                                if (diff < 0 ) {
+                                    if (flag) {
+                                        diff = diff + 26;
+                                    }
+                                    else {
+                                        diff = diff + 10;
+                                    }
+                                }
+                                else if (diff == 0) {
+                                    diff = 1;
+                                }
 
+                                noComb = noComb * diff;
+                            } else {
+                                if (flag) {
+                                    noComb = noComb * 26;
+                                }
+                                else {
+                                    noComb = noComb * 10;
+                                }
+                            }
+                        }
+                        result = noComb + result ;
+                        noComb = 1 ;
+                    }
+                    long step = (long)range.get(col);
+                    i =(int)(result / step) ;
+
+                }
+                else {
+                    i = -1 ;
+                }
+                res.add(i);
             }
-
-
-        }
+        } // end of iterating over the columns
 
      return res ;
     }

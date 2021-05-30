@@ -1,8 +1,6 @@
 import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class DBApp implements DBAppInterface{
@@ -254,7 +252,7 @@ public class DBApp implements DBAppInterface{
                 Vector<Integer> loc = grid.getIndex(r);
                 bucketEntry bE = new bucketEntry(r,(String) page.get(0));
                 if (grid.getBuckets().containsKey(loc)){
-                    vecBucket vB = (vecBucket) deSerialize(grid.getGridID()+loc.toString());
+                    Cell vB = (Cell) deSerialize(grid.getGridID()+loc.toString());
                     int indexB = vB.searchBuckets(bE);
                     Bucket b = vB.getBuckets().get(indexB);
                     int indexBE = b.searchBucketEntry(bE);
@@ -291,7 +289,7 @@ public class DBApp implements DBAppInterface{
                 }
                 else {
                     //we need to create our first bucket here :)
-                    vecBucket vB = new vecBucket(grid.getGridID()+loc.toString(), grid.getColumns(), grid.getType());
+                    Cell vB = new Cell(grid.getGridID()+loc.toString(), grid.getColumns(), grid.getType());
                     try {
                         Bucket b = new Bucket(grid.getType(), grid.getColumns());
                         b.getEntries().add(bE);
