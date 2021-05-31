@@ -55,8 +55,7 @@ public class DBApp implements DBAppInterface{
         try {
             if(getFileSize("src/main/resources/metadata.csv")>0){
             db = getMap("src/main/resources/metadata.csv");
-//            db.get("CityShop").displayAttributes();
-            //db.get("test").displayAttributes();
+
             } else {
                 FileWriter fr = new FileWriter("src/main/resources/metadata.csv");
                 BufferedWriter br2 = new BufferedWriter(fr);
@@ -64,7 +63,6 @@ public class DBApp implements DBAppInterface{
                 br2.write(d);
                 br2.close();
                 fr.close();
-//               System.out.println("gowa el else");
             }
 
                 for (String table : db.keySet()) {
@@ -80,6 +78,15 @@ public class DBApp implements DBAppInterface{
         //load index location into memory
         indixes= (Vector) deSerialize("index");
 
+        Set <String> keys =db.keySet();
+        for(String key: keys){
+            try {
+                db.get(key).setGrids((Hashtable<Vector<String>, String>) deSerialize(key+"Grids"));
+            }
+            catch (Exception e){
+                System.out.println("GRIDS NOT FOUND");
+            }
+        }
 
     }
 
@@ -239,7 +246,15 @@ public class DBApp implements DBAppInterface{
 
         //handle order of columnNames for grid
 
+        Vector<String> rearranged = new Vector<>();
+        rearranged.addAll(Arrays.asList(columnNames));
+        Collections.sort(rearranged);
         DBTable currentTable= db.get(tableName);
+        if(currentTable.getGrids().containsKey(rearranged)){
+            System.out.println("Grid already exists");
+            return;
+        }
+
         Grid grid= new Grid(columnNames,currentTable.getColNameMin(),currentTable.getColNameMax(),currentTable.getColNameType());
         String clusteringKey=  (String) currentTable.getClusteringKey();
         Vector<Vector> pages= currentTable.getPages();
@@ -309,10 +324,9 @@ public class DBApp implements DBAppInterface{
 
         }
         // saving the grid and serializing it
-
-
-
-
+        serialize(grid, (String)grid.getGridID());
+        currentTable.addGrid(grid);
+        serialize(currentTable.getGrids(), tableName+"Grids");
     }// end of method
 
     public void insertIntoTable(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException, ParseException {
@@ -323,21 +337,21 @@ public class DBApp implements DBAppInterface{
         DBTable curTable= db.get(tableName);
         Object clusteringKey= curTable.getClusteringKey();
         Object curKey= colNameValue.get(clusteringKey);
-
-
+        String pageLoc = "";
+        Record r = null;
         //Check if there are no pages in the table
         if(curTable.getPages().size() == 0){
             try {
                 Page p = new Page(tableName);
-                Record r = new Record(colNameValue,(String) clusteringKey);
+                r = new Record(colNameValue,(String) clusteringKey);
                 p.getTuples().add(r);
                 p.setMax(r.getData().get(0).getValue());
                 p.setMin(r.getData().get(0).getValue());
                 p.setNoRows(p.getTuples().size());
+                pageLoc = tableName+db.get(tableName).getPageID() ;
                 serializePage(p,tableName+db.get(tableName).getPageID());
                 updateLocation(tableName+db.get(tableName).getPageID(),p,0,false);
                 db.get(tableName).setPageID(db.get(tableName).getPageID()+1);
-                //System.out.println(curTable.getPages());
             }
             catch(IOException e){
                 e.printStackTrace();
@@ -345,7 +359,7 @@ public class DBApp implements DBAppInterface{
         }
 //
         else {
-            Record r = new Record(colNameValue,(String) clusteringKey);
+            r = new Record(colNameValue,(String) clusteringKey);
             int indexP = curTable.searchPage(r);
 //            System.out.println("IndexP is  " +indexP);
             boolean flag = false ;
@@ -374,6 +388,7 @@ public class DBApp implements DBAppInterface{
 //                    p.setMax(((Record)p.getTuples().get(p.getTuples().size()-1)).getData().get(0).getValue());
 //                    p.setNoRows(p.getTuples().size());
                 }
+                pageLoc = (String)curPage.get(0);
                 serializePage(p,(String)curPage.get(0));
                 updateLocation((String)curPage.get(0),p,indexP,false);
 
@@ -394,6 +409,9 @@ public class DBApp implements DBAppInterface{
                         pNext.setMax(((Record)pNext.getTuples().get(pNext.getTuples().size()-1)).getData().get(0).getValue());
                         pNext.setMin(((Record)pNext.getTuples().get(0)).getData().get(0).getValue());
                         pNext.setNoRows(pNext.getTuples().size());
+                        if(shifter==r){
+                            pageLoc = (String)nextPage.get(0);
+                        }
                         serializePage(pNext,(String)nextPage.get(0));
                         updateLocation((String)nextPage.get(0),pNext,indexP+1,false);
                         flag = false ;
@@ -415,6 +433,9 @@ public class DBApp implements DBAppInterface{
                         pBack.setMax(((Record)pBack.getTuples().get(pBack.getTuples().size()-1)).getData().get(0).getValue());
                         pBack.setMin(((Record)pBack.getTuples().get(0)).getData().get(0).getValue());
                         pBack.setNoRows(pBack.getTuples().size());
+                        if(shifter==r){
+                            pageLoc = (String)prevPage.get(0);
+                        }
                         serializePage(pBack,(String)prevPage.get(0));
                         updateLocation((String)prevPage.get(0),pBack,indexP-1,false);
                         flag = false ;
@@ -437,6 +458,9 @@ public class DBApp implements DBAppInterface{
                     newP.setMax(shifter.getData().get(0).getValue());
                     newP.setMin(shifter.getData().get(0).getValue());
                     newP.setNoRows(newP.getTuples().size());
+                    if(shifter==r){
+                        pageLoc = tableName+db.get(tableName).getPageID();
+                    }
                     serializePage(newP,tableName+db.get(tableName).getPageID());
                     updateLocation(tableName+db.get(tableName).getPageID(),newP,indexP+1,true);
                     db.get(tableName).setPageID(db.get(tableName).getPageID()+1);
@@ -449,6 +473,67 @@ public class DBApp implements DBAppInterface{
 
         }// end of else
 
+        //indexed
+        Set<Vector<String>> gridIDs = curTable.getGrids().keySet();
+        for(Vector<String> g: gridIDs){
+            String ID = (String)curTable.getGrids().get(g);
+            Grid grid = (Grid)deSerialize(ID);
+            Vector<Integer> loc = grid.getIndex(r);
+            bucketEntry bE = new bucketEntry(r,(String) pageLoc);
+            if (grid.getBuckets().containsKey(loc)){
+                Cell vB = (Cell) deSerialize(grid.getGridID()+loc.toString());
+                int indexB = vB.searchBuckets(bE);
+                Bucket b = vB.getBuckets().get(indexB);
+                int indexBE = b.searchBucketEntry(bE);
+                b.getEntries().add(indexBE, bE);
+                b.updateMinMax(bE);
+                if(b.getEntries().size()>b.getMaxBucket()){
+                    boolean flag = false;
+                    for(int i=indexB; i<vB.getBuckets().size()-1; i++){
+                        bucketEntry lastBE = vB.getBuckets().get(indexB).getEntries().get(vB.getBuckets().get(indexB).getEntries().size()-1);
+                        Bucket bb = vB.getBuckets().get(indexB+1);
+                        bb.getEntries().add(bb.searchBucketEntry(lastBE), lastBE);
+                        bb.updateMinMax(lastBE);
+                        if(bb.getEntries().size()<=bb.getMaxBucket()){
+                            flag = true;
+                            break;
+                        }
+                    }
+                    if(!flag){
+                        bucketEntry lastBE = vB.getBuckets().get(vB.getBuckets().size()-1).getEntries().get(vB.getBuckets().get(vB.getBuckets().size()-1).getEntries().size()-1);
+                        Bucket bb = null;
+                        try {
+                            bb = new Bucket(grid.getType(), grid.getColumns());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        bb.getEntries().add(0, lastBE);
+                        bb.updateMinMax(lastBE);
+                        vB.getBuckets().add(bb);
+                    }
+                }
+                grid.getBuckets().put(loc,vB.getBucketID());
+                serialize(vB,vB.getBucketID());
+                // handling the overflow buckets !!!
+            }
+            else {
+                //we need to create our first bucket here :)
+                Cell vB = new Cell(grid.getGridID()+loc.toString(), grid.getColumns(), grid.getType());
+                try {
+                    Bucket b = new Bucket(grid.getType(), grid.getColumns());
+                    b.getEntries().add(bE);
+                    b.updateMinMax(bE);
+                    vB.getBuckets().add(b);
+
+                    grid.getBuckets().put(loc,vB.getBucketID());
+                    serialize(vB,vB.getBucketID());
+
+                }
+                catch (IOException e){
+                }
+
+            }
+        }
     }// end of insert method
 
     public void updateTable(String tableName, String clusteringKeyValue, Hashtable<String, Object> columnNameValue) throws DBAppException {

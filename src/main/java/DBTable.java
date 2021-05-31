@@ -11,6 +11,7 @@ public class DBTable<T extends Comparable <T>> implements Serializable {
     private Hashtable<String, String> colNameMin;
     private Hashtable<String, String> colNameMax;
     private Hashtable<String, String> colNameType;
+    private Hashtable<Vector<String>, String> grids;
 
     public int getPageID() {
         return pageID;
@@ -26,6 +27,7 @@ public class DBTable<T extends Comparable <T>> implements Serializable {
         this.colNameType = colNameType;
         this.pages = new Vector<>();
         this.pageID=0;
+        this.grids = new Hashtable<>();
     }
 
     public void addColumn(String name, String type, String min, String max){
@@ -91,6 +93,18 @@ public class DBTable<T extends Comparable <T>> implements Serializable {
 
     return i ;
     }// end of method
+
+    public void addGrid(Grid g){
+        this.grids.put(g.getColumns(), g.getGridID());
+    }
+
+    public Hashtable<Vector<String>, String> getGrids() {
+        return grids;
+    }
+
+    public void setGrids(Hashtable<Vector<String>, String> grids) {
+        this.grids = grids;
+    }
 
     public Vector<Vector<T>> getPages() {
         return pages;

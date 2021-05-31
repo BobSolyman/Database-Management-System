@@ -14,6 +14,8 @@ public class Grid implements Serializable {
     private Hashtable<String,Object> min;
     private Hashtable<String,Object> max;
     private Hashtable<String,String> type;
+    private Hashtable<Character,Integer> charToInt ;
+    private Hashtable<Integer, Character> intToChar ;
     private String gridID ;
 
     //multiple variations can point to the same bucket!
@@ -46,46 +48,80 @@ public class Grid implements Serializable {
 
 
             }else if (((String)type.get(col)).equals("java.lang.String")){
-                long noComb = 1;
-                long res = 0 ;
-                int maxlen = ((String) max.get(col)).length();
-                int minlen = ((String) min.get(col)).length();
-                boolean flag = true ;
-                for(int j = minlen ; j <= maxlen; j++) {
-                    for (int i = 0; i < j; i++) {
-                        flag = true;
-                        if (i < ((String) min.get(col)).length()) {
-                            int diff = (int) ((String) max.get(col)).charAt(i) - (int) ((String) min.get(col)).charAt(i);
-                            if (((String) min.get(col)).charAt(i)>='0' && ((String) min.get(col)).charAt(i)<='9'){
-                                flag = false;
-                            }
-                            if (diff < 0 ) {
-                                if (flag) {
-                                    diff = diff + 26;
-                                }
-                                else {
-                                    diff = diff + 10 ;
-                                }
-                            }
-                            else if (diff == 0) {
-                                diff = 1;
-                            }
-                            noComb = noComb * diff;
-                        } else {
-                            if (flag) {
-                                noComb = noComb * 26;
-                            }
-                            else {
-                                noComb = noComb * 10;
-                            }
-                        }
-                    }
-                    res = noComb + res ;
-                    noComb = 1 ;
+                char a = 'a';
+                charToInt = new Hashtable<>();
+                intToChar = new Hashtable<>();
+                for (int o = 1 ; o <27 ; o++){
+                    charToInt.put(a,o);
+                    intToChar.put(o,a++);
                 }
-                res = res/9;
-                range.put(col,res);
 
+
+                if (((String) min.get(col)).charAt(0)<='9' && ((String) min.get(col)).charAt(0)>='0'){ // id case
+                    String[] maxPayne = ((String) max.get(col)).split("-");
+                    String[] minPayne = ((String) min.get(col)).split("-");
+                    int maxWell = Integer.parseInt(maxPayne[0]+maxPayne[1]);
+                    int minWell = Integer.parseInt(minPayne[0]+minPayne[1]);
+                    long step = (maxWell - minWell)/9;
+                    range.put(col,step);
+                }
+                else {
+                long maxValue = 0 ;
+                int weight = 0 ;
+                for (int i = ((String) max.get(col)).length()-1 ; i>=0 ; i--){
+                    char x = ((String) max.get(col)).toLowerCase().charAt(i);
+                    maxValue = maxValue + ((26^weight++)*(int)charToInt.get(x));
+                }
+                long minValue = 0 ;
+                weight = 0 ;
+                for (int i = ((String) min.get(col)).length()-1 ; i>=0 ; i--){
+                    char x = ((String) min.get(col)).toLowerCase().charAt(i);
+                    minValue = minValue + ((26^weight++)*(int)charToInt.get(x));
+                }
+                long step = (maxValue - minValue)/9;
+                range.put(col,step);
+                }// end if it was a string
+
+                // trial to use permutations to solve string ranges
+//                long noComb = 1;
+//                long res = 0 ;
+//                int maxlen = ((String) max.get(col)).length();
+//                int minlen = ((String) min.get(col)).length();
+//                boolean flag = true ;
+//                for(int j = minlen ; j <= maxlen; j++) {
+//                    for (int i = 0; i < j; i++) {
+//                        flag = true;
+//                        if (i < ((String) min.get(col)).length()) {
+//                            int diff = (int) ((String) max.get(col)).charAt(i) - (int) ((String) min.get(col)).charAt(i);
+//                            if (((String) min.get(col)).charAt(i)>='0' && ((String) min.get(col)).charAt(i)<='9'){
+//                                flag = false;
+//                            }
+//                            if (diff < 0 ) {
+//                                if (flag) {
+//                                    diff = diff + 26;
+//                                }
+//                                else {
+//                                    diff = diff + 10 ;
+//                                }
+//                            }
+//                            else if (diff == 0) {
+//                                diff = 1;
+//                            }
+//                            noComb = noComb * diff;
+//                        } else {
+//                            if (flag) {
+//                                noComb = noComb * 26;
+//                            }
+//                            else {
+//                                noComb = noComb * 10;
+//                            }
+//                        }
+//                    }
+//                    res = noComb + res ;
+//                    noComb = 1 ;
+//                }
+//                res = res/9;
+//                range.put(col,res);
             }
 
 
@@ -131,54 +167,85 @@ public class Grid implements Serializable {
 
             }else if (((String)type.get(col)).equals("java.lang.String")){
                 int i = 0;
-                if(r.getContent().containsKey(col)) {
-                    String s = (String) r.getContent().get(col);
-                    long noComb = 1;
-                    long result = 0 ;
-                    boolean flag = true ;
-                    int maxlen = s.length();
-                    int minlen = ((String) min.get(col)).length();
-                    for(int j = minlen ; j <= maxlen; j++) {
-                        for (int k = 0; k < j; k++) {
-                            flag=true;
-                            if (k < ((String) min.get(col)).length()) {
-                                int diff = (int) s.charAt(k) - (int) ((String) min.get(col)).charAt(k);
-                                if (s.charAt(k)>='0' && s.charAt(k)<='9'){
-                                    flag = false;
-                                }
-                                if (diff < 0 ) {
-                                    if (flag) {
-                                        diff = diff + 26;
-                                    }
-                                    else {
-                                        diff = diff + 10;
-                                    }
-                                }
-                                else if (diff == 0) {
-                                    diff = 1;
-                                }
+                long step = (long)range.get(col);
 
-                                noComb = noComb * diff;
-                            } else {
-                                if (flag) {
-                                    noComb = noComb * 26;
-                                }
-                                else {
-                                    noComb = noComb * 10;
-                                }
-                            }
-                        }
-                        result = noComb + result ;
-                        noComb = 1 ;
+                if(r.getContent().containsKey(col)){
+                    if (((String)r.getContent().get(col)).charAt(0)<='9' && ((String)r.getContent().get(col)).charAt(0)>='0'){ // id case
+                        String[] maxPayne = ((String)r.getContent().get(col)).split("-");
+                        String[] minPayne = ((String) min.get(col)).split("-");
+                        int maxWell = Integer.parseInt(maxPayne[0]+maxPayne[1]);
+                        int minWell = Integer.parseInt(minPayne[0]+minPayne[1]);
+                        i = (int)((maxWell - minWell)/step);
                     }
-                    long step = (long)range.get(col);
-                    i =(int)(result / step) ;
+                    else{
+                        long maxValue = 0 ;
+                        int weight = 0 ;
+                        for (int j = ((String)r.getContent().get(col)).length()-1 ; j>=0 ; j--){
+                            char x = ((String)r.getContent().get(col)).toLowerCase().charAt(j);
+                            maxValue = maxValue + ((26^weight++)*(int)charToInt.get(x));
+                        }
+                        long minValue = 0 ;
+                        weight = 0 ;
+                        for (int j = ((String) min.get(col)).length()-1 ; j>=0 ; j--){
+                            char x = ((String) min.get(col)).toLowerCase().charAt(j);
+                            minValue = minValue + ((26^weight++)*(int)charToInt.get(x));
+                        }
+                        i = (int)((maxValue - minValue)/step);
+                    }
 
                 }
-                else {
-                    i = -1 ;
-                }
+                else
+                    i = -1;
                 res.add(i);
+                // case of permutation trial
+//                if(r.getContent().containsKey(col)) {
+//                    String s = (String) r.getContent().get(col);
+//                    long noComb = 1;
+//                    long result = 0 ;
+//                    boolean flag = true ;
+//                    int maxlen = s.length();
+//                    int minlen = ((String) min.get(col)).length();
+//                    for(int j = minlen ; j <= maxlen; j++) {
+//                        for (int k = 0; k < j; k++) {
+//                            flag=true;
+//                            if (k < ((String) min.get(col)).length()) {
+//                                int diff = (int) s.charAt(k) - (int) ((String) min.get(col)).charAt(k);
+//                                if (s.charAt(k)>='0' && s.charAt(k)<='9'){
+//                                    flag = false;
+//                                }
+//                                if (diff < 0 ) {
+//                                    if (flag) {
+//                                        diff = diff + 26;
+//                                    }
+//                                    else {
+//                                        diff = diff + 10;
+//                                    }
+//                                }
+//                                else if (diff == 0) {
+//                                    diff = 1;
+//                                }
+//
+//                                noComb = noComb * diff;
+//                            } else {
+//                                if (flag) {
+//                                    noComb = noComb * 26;
+//                                }
+//                                else {
+//                                    noComb = noComb * 10;
+//                                }
+//                            }
+//                        }
+//                        result = noComb + result ;
+//                        noComb = 1 ;
+//                    }
+//                    long step = (long)range.get(col);
+//                    i =(int)(result / step) ;
+//
+//                }
+//                else {
+//                    i = -1 ;
+//                }
+//                res.add(i);
             }
         } // end of iterating over the columns
 
