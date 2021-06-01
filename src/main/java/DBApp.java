@@ -846,6 +846,27 @@ public class DBApp implements DBAppInterface{
     } //end of method
 
     public Iterator selectFromTable(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException {
+        Vector results= new Vector();
+        Iterator resultset= results.iterator();
+        for(int i=0;i<sqlTerms.length;i++){
+            String tableName=sqlTerms[i].get_strTableName();
+            String colName=sqlTerms[i].get_strColumnName();
+            String operator=sqlTerms[i].get_strOperator();
+            Object val=sqlTerms[i].get_objValue();
+            if(!db.containsKey(tableName))
+                throw new DBAppException("TABLE NAME NOT FOUND!!!");
+            DBTable table=db.get(tableName);
+
+            if(!table.getColNameType().containsKey(colName))
+                throw new DBAppException("COLUMN DOES NOT EXIST!!!");
+
+            if(!operator.equals(">")||!operator.equals(">=")||!operator.equals("<")||!operator.equals("<=")||!operator.equals("=")||!operator.equals("!=")){
+                throw new DBAppException("OPERATOR NOT SUPPORTED!!!");
+            }
+
+
+
+        }
         return null;
     }
 
