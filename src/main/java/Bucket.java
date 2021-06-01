@@ -26,41 +26,45 @@ public class Bucket implements Serializable {
 
     public void updateMinMax (bucketEntry x){
         // use it every time with insertion
-        Hashtable<String, Object> r = x.getRow().getContent();
-        for(Map.Entry m : r.entrySet()){
-            if(min.containsKey(m.getKey())){
-                if (((String)type.get(m.getKey())).equals("java.lang.Integer")){
-                    if((Integer)min.get(m.getKey())>(Integer)m.getValue()){
-                        min.put((String)m.getKey(), m.getValue());
-                    }
-                    if((Integer)max.get(m.getKey())<(Integer)m.getValue()){
-                        max.put((String)m.getKey(), m.getValue());
-                    }
-                }
-                else if (((String)type.get(m.getKey())).equals("java.lang.Double")){
-                    if((Double)min.get(m.getKey())>(Double) m.getValue()){
-                        min.put((String)m.getKey(), m.getValue());
-                    }
-                    if((Double)max.get(m.getKey())<(Double)m.getValue()){
-                        max.put((String)m.getKey(), m.getValue());
-                    }
-                }
-                else if (((String)type.get(m.getKey())).equals("java.util.Date")){
-                    if(((Date)min.get(m.getKey())).compareTo((Date)m.getValue())>0){
-                        min.put((String)m.getKey(), m.getValue());
-                    }
-                    if(((Date)max.get(m.getKey())).compareTo((Date)m.getValue())<0){
-                        max.put((String)m.getKey(), m.getValue());
-                    }
+        if(x==null){
+            for (bucketEntry bE: this.getEntries()){
+                updateMinMax(bE);
+            }
+        }
+        else {
+            Hashtable<String, Object> r = x.getRow().getContent();
+            for (Map.Entry m : r.entrySet()) {
+                if (min.containsKey(m.getKey())) {
+                    if (((String) type.get(m.getKey())).equals("java.lang.Integer")) {
+                        if ((Integer) min.get(m.getKey()) > (Integer) m.getValue()) {
+                            min.put((String) m.getKey(), m.getValue());
+                        }
+                        if ((Integer) max.get(m.getKey()) < (Integer) m.getValue()) {
+                            max.put((String) m.getKey(), m.getValue());
+                        }
+                    } else if (((String) type.get(m.getKey())).equals("java.lang.Double")) {
+                        if ((Double) min.get(m.getKey()) > (Double) m.getValue()) {
+                            min.put((String) m.getKey(), m.getValue());
+                        }
+                        if ((Double) max.get(m.getKey()) < (Double) m.getValue()) {
+                            max.put((String) m.getKey(), m.getValue());
+                        }
+                    } else if (((String) type.get(m.getKey())).equals("java.util.Date")) {
+                        if (((Date) min.get(m.getKey())).compareTo((Date) m.getValue()) > 0) {
+                            min.put((String) m.getKey(), m.getValue());
+                        }
+                        if (((Date) max.get(m.getKey())).compareTo((Date) m.getValue()) < 0) {
+                            max.put((String) m.getKey(), m.getValue());
+                        }
 
 
-
-                }else if (((String)type.get(m.getKey())).equals("java.lang.String")){
-                    if(((String)min.get(m.getKey())).compareTo((String) m.getValue())>0){
-                        min.put((String)m.getKey(), m.getValue());
-                    }
-                    if(((String)max.get(m.getKey())).compareTo((String)m.getValue())<0){
-                        max.put((String)m.getKey(), m.getValue());
+                    } else if (((String) type.get(m.getKey())).equals("java.lang.String")) {
+                        if (((String) min.get(m.getKey())).compareTo((String) m.getValue()) > 0) {
+                            min.put((String) m.getKey(), m.getValue());
+                        }
+                        if (((String) max.get(m.getKey())).compareTo((String) m.getValue()) < 0) {
+                            max.put((String) m.getKey(), m.getValue());
+                        }
                     }
                 }
             }

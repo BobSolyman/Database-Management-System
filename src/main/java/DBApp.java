@@ -701,6 +701,7 @@ public class DBApp implements DBAppInterface{
         }
         //check if record clustering key exists
 
+        //by pages
         columnNameValue.put((String)db.get(tableName).getClusteringKey(),cVK);
 
         Record r = new Record(columnNameValue,(String) db.get(tableName).getClusteringKey());
@@ -709,12 +710,16 @@ public class DBApp implements DBAppInterface{
         Vector curPage = ((Vector)db.get(tableName).getPages().get(indexP));
         Page p = deSerializePage((String)curPage.get(0));
         int[] indexR = p.searchRecord(r);
+        Record gRecord = null;
+        Record newR = null;
+        String forGLoc = "";
         if (indexR[1]==0){
 //            System.out.println("Record not found");
             throw new DBAppException("Record not found");
         }
         else {
-            Vector<Pair> oldV = ((Record) p.getTuples().get(indexR[0])).getData();
+            gRecord = (Record) p.getTuples().get(indexR[0]);
+            Vector<Pair> oldV = gRecord.getData();
             //update every Pair's value
             for (int i = 0; i < oldV.size(); i++) {
                 if (columnNameValue.containsKey(oldV.get(i).getKey())) {
@@ -722,15 +727,99 @@ public class DBApp implements DBAppInterface{
                 }
             }
 
-            Record newR = ((Record) p.getTuples().get(indexR[0]));
+            newR = ((Record) p.getTuples().get(indexR[0]));
             newR.setData(oldV);
 
             for (Map.Entry m : columnNameValue.entrySet()){
                 newR.getContent().put((String) m.getKey(),m.getValue());
             }
-
+            forGLoc = (String)curPage.get(0);
             serializePage(p,(String)curPage.get(0));
             updateLocation((String)curPage.get(0),p,indexP,false);
+        }
+
+
+        //by indices
+        Vector<String> columns = (Vector<String>) columnNameValue.keySet();
+        Collections.sort(columns);
+        Set<Vector<String>> Grids = db.get(tableName).getGrids().keySet();
+        for(Vector<String> g: Grids){
+            boolean flag = false;
+            for(String column : columns){
+                if(g.contains(column)){
+                    flag = true;
+                    break;
+                }
+            }
+            if(flag){
+                Grid grid =(Grid) deSerialize((String)db.get(tableName).getGrids().get(g));
+                    Vector<Integer> gLoc = grid.getIndex(gRecord);
+                    Cell cell = (Cell)deSerialize((String)grid.getBuckets().get(gLoc));
+                    bucketEntry bE = new bucketEntry(gRecord, forGLoc);
+                    int indexB = cell.searchBuckets(bE);
+                    Bucket b = cell.getBuckets().get(indexB);
+                    int indexBE = b.searchBucketEntry(bE);
+                    b.getEntries().remove(indexBE);
+                    b.updateMinMax(null);
+                    serialize(cell, (String)grid.getBuckets().get(gLoc));
+                    Vector<Integer> loc = grid.getIndex(r);
+                    gLoc = grid.getIndex(newR);
+                    bE = new bucketEntry(newR, forGLoc);
+                    if (grid.getBuckets().containsKey(gLoc)){
+                        cell = (Cell)deSerialize((String)grid.getBuckets().get(gLoc));
+                        indexB = cell.searchBuckets(bE);
+                        b = cell.getBuckets().get(indexB);
+                        indexBE = b.searchBucketEntry(bE);
+                        b.getEntries().add(indexBE, bE);
+                        b.updateMinMax(bE);
+                        if(b.getEntries().size()>b.getMaxBucket()){
+                            boolean flag2 = false;
+                            for(int i=indexB; i<cell.getBuckets().size()-1; i++){
+                                bucketEntry lastBE = cell.getBuckets().get(indexB).getEntries().get(cell.getBuckets().get(indexB).getEntries().size()-1);
+                                Bucket bb = cell.getBuckets().get(indexB+1);
+                                bb.getEntries().add(bb.searchBucketEntry(lastBE), lastBE);
+                                bb.updateMinMax(lastBE);
+                                if(bb.getEntries().size()<=bb.getMaxBucket()){
+                                    flag2 = true;
+                                    break;
+                                }
+                            }
+                            if(!flag2){
+                                bucketEntry lastBE = cell.getBuckets().get(cell.getBuckets().size()-1).getEntries().get(cell.getBuckets().get(cell.getBuckets().size()-1).getEntries().size()-1);
+                                Bucket bb = null;
+                                try {
+                                    bb = new Bucket(grid.getType(), grid.getColumns());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                                bb.getEntries().add(0, lastBE);
+                                bb.updateMinMax(lastBE);
+                                cell.getBuckets().add(bb);
+                            }
+                        }
+                        grid.getBuckets().put(gLoc,cell.getBucketID());
+                        serialize(cell,cell.getBucketID());
+                        // handling the overflow buckets !!!
+                    }
+                    else {
+                        //we need to create our first bucket here :)
+                        Cell vB = new Cell(grid.getGridID()+loc.toString(), grid.getColumns(), grid.getType());
+                        try {
+                            Bucket bu = new Bucket(grid.getType(), grid.getColumns());
+                            bu.getEntries().add(bE);
+                            bu.updateMinMax(bE);
+                            vB.getBuckets().add(bu);
+                            grid.getBuckets().put(loc,vB.getBucketID());
+                            serialize(vB,vB.getBucketID());
+
+                        }
+                        catch (IOException e){
+                        }
+
+                    }
+
+                serialize(grid,grid.getGridID());
+            }
         }
 
     }
