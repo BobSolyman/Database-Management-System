@@ -945,15 +945,16 @@ public class DBApp implements DBAppInterface{
 
     public Iterator selectFromTable(SQLTerm[] sqlTerms, String[] arrayOperators) throws DBAppException {
         Vector results= new Vector();
-        Iterator resultset= results.iterator();
+        Vector<String> columns= new Vector();
+        DBTable table = null;
         for(int i=0;i<sqlTerms.length;i++){
-            String tableName=sqlTerms[i].get_strTableName();
-            String colName=sqlTerms[i].get_strColumnName();
-            String operator=sqlTerms[i].get_strOperator();
-            Object val=sqlTerms[i].get_objValue();
+            String tableName=sqlTerms[i]._strTableName;
+            String colName=sqlTerms[i]._strColumnName;
+            String operator=sqlTerms[i]._strOperator;
+            Object val=sqlTerms[i]._objValue;
             if(!db.containsKey(tableName))
                 throw new DBAppException("TABLE NAME NOT FOUND!!!");
-            DBTable table=db.get(tableName);
+            table=db.get(tableName);
 
             if(!table.getColNameType().containsKey(colName))
                 throw new DBAppException("COLUMN DOES NOT EXIST!!!");
@@ -962,10 +963,67 @@ public class DBApp implements DBAppInterface{
                 throw new DBAppException("OPERATOR NOT SUPPORTED!!!");
             }
 
-
-
+            columns.add(colName);
         }
+        table = db.get(sqlTerms[0]._strTableName);
+        Collections.sort(columns);
+        Set<Vector<String>> gridIDs = table.getGrids().keySet();
+        for()
+        for(Vector<String> g: gridIDs){
+            String ID = (String)table.getGrids().get(g);
+            Grid grid = (Grid)deSerialize(ID);
+            boolean flag = false;
+            Vector<String> commonColumns = new Vector<>();
+            for(String column : columns){
+                if(g.contains(column)){
+                    commonColumns.add(column);
+                    flag = true;
+                }
+                if(flag){
+                    if()
+                }
+            }
+        }
+
+
+
         return null;
+    }
+
+    public Iterator firstAndLastBE(String tableName, String columnName, String columnValue) {
+        Vector<Vector<Integer>> res = new Vector<>();
+        DBTable table = db.get(tableName);
+        Set<Vector<String>> gridIDs = table.getGrids().keySet();
+        for (Vector<String> g : gridIDs) {
+            String ID = (String) table.getGrids().get(g);
+            Grid grid = (Grid) deSerialize(ID);
+            if (grid.getColumns().size() > 1) {
+                continue;
+            }
+            boolean flag = false;
+            if (g.contains(columnName)) {
+                flag = true;
+            }
+            if (flag) {
+                Hashtable<String, Object> data = new Hashtable<>();
+                data.put(columnName, columnValue);
+                Record gRecord = new Record(data, "1");
+                Vector<Integer> gLoc = grid.getIndex(gRecord);
+                Cell cell = (Cell) deSerialize((String) grid.getBuckets().get(gLoc));
+                bucketEntry bE = new bucketEntry(gRecord, "somewhere");
+                int indexB = cell.searchBuckets(bE);
+                Bucket b = cell.getBuckets().get(indexB);
+                int indexBE = b.searchBucketEntry(bE);
+                Vector<bucketEntry> BEs = new Vector<>();
+                for(Bucket bb : cell.getBuckets()){
+                    BEs.addAll(bb.getEntries());
+                }
+                Iterator iter = BEs.iterator();
+                while(iter.hasNext()){
+                    //here stop
+                }
+            }
+        }
     }
 
 
