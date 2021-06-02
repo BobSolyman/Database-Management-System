@@ -78,14 +78,23 @@ public class DBApp implements DBAppInterface{
         //load index location into memory
         indixes= (Vector) deSerialize("index");
 
+
+
         Set <String> keys =db.keySet();
         for(String key: keys){
-            try {
-                db.get(key).setGrids((Hashtable<Vector<String>, String>) deSerialize(key+"Grids"));
+            File grids = new File("src/main/resources/"+key+"Grids");
+            if (!grids.exists()) {
+                db.get(key).setGrids(new Hashtable<Vector<String>, String>());
             }
-            catch (Exception e){
-                System.out.println("GRIDS NOT FOUND");
+            else{
+                try {
+                    db.get(key).setGrids((Hashtable<Vector<String>, String>) deSerialize(key+"Grids"));
+                }
+                catch (Exception e){
+                    System.out.println("GRIDS NOT FOUND");
+                }
             }
+
         }
 
     }
@@ -324,8 +333,8 @@ public class DBApp implements DBAppInterface{
 
         }
         // saving the grid and serializing it
-        serialize(grid, (String)grid.getGridID());
         currentTable.addGrid(grid);
+        serialize(grid, (String)grid.getGridID());
         serialize(currentTable.getGrids(), tableName+"Grids");
     }// end of method
 

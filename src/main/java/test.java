@@ -1,6 +1,4 @@
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -373,7 +371,16 @@ public class test {
 
 
 
+//        Grid:2021-06-02 01:31:24.875[1, 4]
 
+        FileOutputStream file = new FileOutputStream("src/main/resources/data/"+"Grid:2021-06-02 01,31,24.875[1, 4]" + ".ser");
+        ObjectOutputStream out = new ObjectOutputStream(file);
+        Object object = null;
+        // Method for serialization of object
+        out.writeObject(object);
+
+        out.close();
+        file.close();
 
 
 

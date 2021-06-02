@@ -1,5 +1,7 @@
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
 
@@ -30,19 +32,28 @@ public class Grid implements Serializable {
         this.max = ma;
         this.type = t;
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        gridID = timestamp.toString() ;
+        gridID = (new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(timestamp)).toString() ;
 
         for (String col : this.columns){
             if (((String)type.get(col)).equals("java.lang.Integer")){
-                int step = ((int)max.get(col)-(int)min.get(col))/9;
+                int step = (Integer.parseInt((String)max.get(col))-Integer.parseInt((String)min.get(col)))/9;
                 range.put(col,step);
             }
             else if (((String)type.get(col)).equals("java.lang.Double")){
-                double step = ((double)max.get(col)-(double)min.get(col))/9;
+                double step = (Double.parseDouble((String)max.get(col))-Double.parseDouble((String)min.get(col)))/9;
                 range.put(col,step);
             }
             else if (((String)type.get(col)).equals("java.util.Date")){
-                int step = ((((Date)max.get(col)).getDate()-((Date)min.get(col)).getDate())/9);
+                Date minDate = null;
+                Date maxDate = null;
+                try {
+                    minDate = new SimpleDateFormat("yyyy-MM-dd").parse((String)min.get(col));
+                    maxDate =  new SimpleDateFormat("yyyy-MM-dd").parse((String)max.get(col));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+                int step = (maxDate.getDate()-minDate.getDate())/9;
                 range.put(col,step);
 
 
@@ -141,7 +152,7 @@ public class Grid implements Serializable {
                 int step = (int)range.get(col);
                 int i = 0 ;
                 if(r.getContent().containsKey(col))
-                     i = ((int)r.getContent().get(col)-(int)min.get(col))/step;
+                     i = ((int)r.getContent().get(col)-Integer.parseInt((String)min.get(col)))/step;
                 else
                      i = -1 ;
                 res.add(i);
@@ -150,7 +161,7 @@ public class Grid implements Serializable {
                 double step = (double)range.get(col);
                 double i = 0 ;
                 if(r.getContent().containsKey(col))
-                    i = ((double)r.getContent().get(col)-(double)min.get(col))/step;
+                    i = ((double)r.getContent().get(col)-Double.parseDouble((String)min.get(col)))/step;
                 else
                     i = -1 ;
                 res.add((int)i);
@@ -159,8 +170,18 @@ public class Grid implements Serializable {
             else if (((String)type.get(col)).equals("java.util.Date")){
                 int step = (int)range.get(col);
                 int i = 0 ;
-                if(r.getContent().containsKey(col))
-                    i = (((Date)r.getContent().get(col)).getDate()-((Date)min.get(col)).getDate())/step;
+                if(r.getContent().containsKey(col)){
+                    Date minDate = null;
+                    Date maxDate = null;
+                    try {
+                        minDate = new SimpleDateFormat("yyyy-MM-dd").parse((String)min.get(col));
+                        maxDate =  (Date)r.getContent().get(col);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
+                    i = (maxDate.getDate()-minDate.getDate())/step;
+                }
+
                 else
                     i = -1;
                 res.add(i);

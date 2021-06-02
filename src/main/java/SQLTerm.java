@@ -1,10 +1,10 @@
 import java.util.Iterator;
 
 public class SQLTerm{
-    private String _strTableName;
-    private String _strColumnName;
-    private String _strOperator;
-    private Object _objValue;
+    public String _strTableName;
+    public String _strColumnName;
+    public String _strOperator;
+    public Object _objValue;
 
     public String get_strTableName() {
         return _strTableName;

@@ -34,7 +34,7 @@ public class Bucket implements Serializable {
         else {
             Hashtable<String, Object> r = x.getRow().getContent();
             for (Map.Entry m : r.entrySet()) {
-                if (min.containsKey(m.getKey())) {
+                if (columns.contains(m.getKey())) {
                     if (((String) type.get(m.getKey())).equals("java.lang.Integer")) {
                         if ((Integer) min.get(m.getKey()) > (Integer) m.getValue()) {
                             min.put((String) m.getKey(), m.getValue());
