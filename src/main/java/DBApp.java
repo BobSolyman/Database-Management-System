@@ -2,6 +2,7 @@ import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class DBApp implements DBAppInterface{
 
@@ -990,7 +991,7 @@ public class DBApp implements DBAppInterface{
         return null;
     }
 
-    public Iterator firstAndLastBE(String tableName, String columnName, String columnValue) {
+    public Vector<Vector<Integer>> firstAndLastBE(String tableName, String columnName, String columnValue) {
         Vector<Vector<Integer>> res = new Vector<>();
         DBTable table = db.get(tableName);
         Set<Vector<String>> gridIDs = table.getGrids().keySet();
@@ -1018,15 +1019,58 @@ public class DBApp implements DBAppInterface{
                 for(Bucket bb : cell.getBuckets()){
                     BEs.addAll(bb.getEntries());
                 }
-                Iterator iter = BEs.iterator();
-                while(iter.hasNext()){
-                    //here stop
+                int secIndex = BEs.lastIndexOf(columnValue);
+                int i = 0;
+                for(i=0; i<cell.getBuckets().size(); i++){
+                    if(cell.getBuckets().get(i).getEntries().size()>=secIndex){
+                        secIndex -= cell.getBuckets().get(i).getEntries().size();
+                        continue;
+                    }
+                    else {
+                        break;
+                    }
                 }
-            }
+                res.add(0,gLoc);
+                Vector<Integer> runner = new Vector<>(indexB);
+                runner.add(0,indexB);
+                res.add(1, runner);
+                runner.remove(0);
+                runner.add(0, indexBE);
+                res.add(2, runner);
+                runner.remove(0);
+                runner.add(0, i);
+                res.add(3, runner);
+                runner.remove(0);
+                runner.add(0, secIndex);
+                res.add(4, runner);
+                return res;
+            }//tbh
         }
     }
 
+    public static Vector<bucketEntry> queryAND(Vector<bucketEntry> op1, Vector<bucketEntry> op2){
+        Set<bucketEntry> set1 = new HashSet<bucketEntry>(op1);
+        Set<bucketEntry> set2 = new HashSet<bucketEntry>(op2);
+        set1.stream().filter(set2::contains).collect(Collectors.toSet());
+        Vector<bucketEntry> res = new Vector<>();
+        res.addAll(set1);
+        return res;
+    }
 
+    public static Vector<bucketEntry> queryOR(Vector<bucketEntry> op1, Vector<bucketEntry> op2){
+        Set<bucketEntry> set1 = new HashSet<bucketEntry>(op1);
+        Set<bucketEntry> set2 = new HashSet<bucketEntry>(op2);
+        set1.addAll(set2);
+        Vector<bucketEntry> res = new Vector<>();
+        res.addAll(set1);
+        return res;
+    }
+
+    public static Vector<bucketEntry> queryXOR(Vector<bucketEntry> op1, Vector<bucketEntry> op2){
+        Vector<bucketEntry> b = queryAND(op1,op2);
+        b.removeAll(queryOR(op1,op2));
+        return b;
+    }
 
     public void serializePage(Object object, String filename){
         try
