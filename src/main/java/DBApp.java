@@ -9,7 +9,6 @@ public class DBApp implements DBAppInterface{
      private HashMap<String,DBTable> db= new HashMap();
      //Vector [Table,ColName,location]
     private int bucketSize ;
-    private Vector indixes = new Vector() ;
 
 
 
@@ -76,8 +75,6 @@ public class DBApp implements DBAppInterface{
             System.out.println("NO PREVIOUS DB!!!");
             return;
         }
-        //load index location into memory
-        indixes= (Vector) deSerialize("index");
 
 
 
