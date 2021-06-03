@@ -862,10 +862,17 @@ public class DBApp implements DBAppInterface{
 
         Vector<String> col = (Vector<String>) columnNameValue.keySet();
         Collections.sort(col);
-        Set<Vector<String>> grids = db.get(tableName).getGrids().keySet();
+        Set<Vector<String>> Grids = db.get(tableName).getGrids().keySet();
+        Vector<String> commonCol = new Vector<>();
+        for(Vector<String> m :Grids){
+            if (col.containsAll(m)){
+                if (m.size()>commonCol.size())
+                    commonCol = m ;
+            }
+        }
 
-        if(db.get(tableName).getGrids().containsKey(col)){
-            Grid grid = (Grid) deSerialize((String) db.get(tableName).getGrids().get(col));
+        if(commonCol.size()>0){
+            Grid grid = (Grid) deSerialize((String) db.get(tableName).getGrids().get(commonCol));
             Record r = new Record(columnNameValue, clusteringKey);
             Vector<Integer> gLoc = grid.getIndex(r);
             if(grid.getBuckets().containsKey(gLoc)){
@@ -949,12 +956,9 @@ public class DBApp implements DBAppInterface{
                     serialize(cell, cell.getBucketID());
                 }
             }
-            return;
         }
-        for(){//mahmoud
 
-        }
-        if(containsClusteringKey){
+       else if(containsClusteringKey){
             Record r = new Record(columnNameValue, clusteringKey);
             int indexP = db.get(tableName).searchPage(r);
             Vector curPage = ((Vector)db.get(tableName).getPages().get(indexP));
