@@ -866,24 +866,98 @@ public class DBApp implements DBAppInterface{
         Vector<String> col = (Vector<String>) columnNameValue.keySet();
         Collections.sort(col);
         Set<Vector<String>> grids = db.get(tableName).getGrids().keySet();
+
         if(db.get(tableName).getGrids().containsKey(col)){
-            Grid grid = (Grid)db.get(tableName).getGrids().get(col);
+            Grid grid = (Grid) deSerialize((String) db.get(tableName).getGrids().get(col));
             Record r = new Record(columnNameValue, clusteringKey);
             Vector<Integer> gLoc = grid.getIndex(r);
             if(grid.getBuckets().containsKey(gLoc)){
                 Cell cell = (Cell) deSerialize(grid.getGridID()+gLoc.toString());
-
-                for(int j=cell.getBuckets().size()-1; j>=0; j++){
+                bucketEntry bE = new bucketEntry(r, "somewhere");
+                int bucketCounter = cell.searchBuckets(bE);
+                int entryCounter = cell.getBuckets().get(bucketCounter).searchBucketEntry(bE);
+                boolean firstentry  =true;
+                for(int j=bucketCounter; j<cell.getBuckets().size(); j++){
                     Bucket bb = cell.getBuckets().get(j);
-                    for(int i=bb.getEntries().size()-1; i>=0; i++){
+                    boolean emptied = false;
+                    for(int i=0; i<bb.getEntries().size(); i++){
+                        if(firstentry){
+                            i = entryCounter;
+                            firstentry = false;
+                        }
+                        bucketEntry bee = bb.getEntries().get(i);
+                        boolean belongs = true;
+                        for(Map.Entry m : columnNameValue.entrySet()){
+                            if(bee.getRow().getContent().get(m.getKey())!=m.getValue()){
+                                belongs = false;
+                                break;
+                            }
+                        }
+                        if(belongs){
+                            bucketEntry removed = bb.getEntries().get(i);
+                            Page pp = deSerializePage(removed.getPageLoc());
+                            pp.getTuples().remove(removed.getRow());
+
+                            int indexP = db.get(tableName).searchPage(removed.getRow());
+                            Vector curPage = ((Vector)db.get(tableName).getPages().get(indexP));
+                            if(pp.getTuples().size()==0){
+                                db.get(tableName).getPages().remove(indexP);
+                                try
+                                {
+                                    //Saving of object in a file
+                                    FileOutputStream file = new FileOutputStream("src/main/resources/data/"+ tableName +".ser");
+                                    ObjectOutputStream out = new ObjectOutputStream(file);
+                                    // Method for serialization of object
+                                    Vector pages = (Vector)db.get(tableName).getPages();
+                                    out.writeObject(pages);
+                                    out.close();
+                                    file.close();
+//                        System.out.println("Object has been serialized");
+                                }
+                                catch(IOException ex)
+                                {
+                                    ex.printStackTrace();
+                                }
+                                File tbd = new File("src/main/resources/data/"+(String)curPage.get(0)+".ser");
+                                tbd.delete();
+                            }
+                            else {
+                                serializePage(pp, (String) curPage.get(0));
+                                updateLocation((String) curPage.get(0), pp, indexP,false);
+                            }
+
+
+                            bb.getEntries().remove(i);
+                            if(bb.getEntries().size()==0){
+                                emptied=true;
+                            }
+                            i--;
+                        }
 
                     }
+                    if(emptied){
+                        cell.getBuckets().remove(j);
+                        j--;
+                    }
+                    else{
+                        bb.updateMinMax(null);
+                    }
                 }
-
+                if(cell.getBuckets().size()==0){
+                    grid.getBuckets().remove(gLoc);
+                    File tbd = new File("src/main/resources/data/"+cell.getBucketID()+".ser");
+                    tbd.delete();
+                }
+                else {
+                    serialize(cell, cell.getBucketID());
+                }
             }
+            return;
+        }
+        for(){//mahmoud
 
         }
-        else if(containsClusteringKey){
+        if(containsClusteringKey){
             Record r = new Record(columnNameValue, clusteringKey);
             int indexP = db.get(tableName).searchPage(r);
             Vector curPage = ((Vector)db.get(tableName).getPages().get(indexP));
