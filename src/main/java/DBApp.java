@@ -1013,8 +1013,8 @@ public class DBApp implements DBAppInterface{
         return null;
     }
 
-    public Vector<Vector<Integer>> firstAndLastBE(String tableName, String columnName, String columnValue) {
-        Vector<Vector<Integer>> res = new Vector<>();
+    public Vector<bucketEntry> getTerm(String tableName, String columnName, String columnValue, String operator) {
+        Vector<bucketEntry> res = new Vector<>();
         DBTable table = db.get(tableName);
         Set<Vector<String>> gridIDs = table.getGrids().keySet();
         for (Vector<String> g : gridIDs) {
@@ -1026,8 +1026,6 @@ public class DBApp implements DBAppInterface{
             boolean flag = false;
             if (g.contains(columnName)) {
                 flag = true;
-            }
-            if (flag) {
                 Hashtable<String, Object> data = new Hashtable<>();
                 data.put(columnName, columnValue);
                 Record gRecord = new Record(data, "1");
@@ -1041,31 +1039,51 @@ public class DBApp implements DBAppInterface{
                 for(Bucket bb : cell.getBuckets()){
                     BEs.addAll(bb.getEntries());
                 }
-                int secIndex = BEs.lastIndexOf(columnValue);
-                int i = 0;
-                for(i=0; i<cell.getBuckets().size(); i++){
-                    if(cell.getBuckets().get(i).getEntries().size()>=secIndex){
-                        secIndex -= cell.getBuckets().get(i).getEntries().size();
-                        continue;
-                    }
-                    else {
-                        break;
-                    }
+//                int secIndex = BEs.lastIndexOf(columnValue);
+//                int firstIndex = BEs.indexOf(columnValue);
+                // what will happen if specific cell doesn't exist?
+                if (operator.equals("=")) {
+
                 }
-                res.add(0,gLoc);
-                Vector<Integer> runner = new Vector<>(indexB);
-                runner.add(0,indexB);
-                res.add(1, runner);
-                runner.remove(0);
-                runner.add(0, indexBE);
-                res.add(2, runner);
-                runner.remove(0);
-                runner.add(0, i);
-                res.add(3, runner);
-                runner.remove(0);
-                runner.add(0, secIndex);
-                res.add(4, runner);
-                return res;
+                else if(operator.equals(">")){
+
+                }
+                else if(operator.equals(">=")){
+
+                }
+                else if(operator.equals("<")){
+
+                }
+                else if(operator.equals("<=")){
+
+                }
+                else if(operator.equals("!=")){
+
+                }
+//                int i = 0;
+//                for(i=0; i<cell.getBuckets().size(); i++){
+//                    if(cell.getBuckets().get(i).getEntries().size()>=secIndex){
+//                        secIndex -= cell.getBuckets().get(i).getEntries().size();
+//                        continue;
+//                    }
+//                    else {
+//                        break;
+//                    }
+//                }
+//                res.add(0,gLoc);
+//                Vector<Integer> runner = new Vector<>(indexB);
+//                runner.add(0,indexB);
+//                res.add(1, runner);
+//                runner.remove(0);
+//                runner.add(0, indexBE);
+//                res.add(2, runner);
+//                runner.remove(0);
+//                runner.add(0, i);
+//                res.add(3, runner);
+//                runner.remove(0);
+//                runner.add(0, secIndex);
+//                res.add(4, runner);
+//                return res;
             }//tbh
         }
         return  null ;
