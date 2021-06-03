@@ -118,24 +118,20 @@ public class Bucket implements Serializable {
                             continue;
                         }
                         return min1.compareTo(min2);
-
                     }
                 }
                 return 0;
 
             }};
         i = Collections.binarySearch(this.getEntries(),bE,c);
-        if (i == -1){
-            i = 0;
+        if (i >= 0){
+            return i ;
         }
-        else if (i < 0){
-            i = Math.abs(i+1)-1;
-
+        else {
+            i = Math.abs(i +1);
+            return i;
         }
 
-
-
-        return i;
     }
 
 
