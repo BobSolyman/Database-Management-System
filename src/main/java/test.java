@@ -373,14 +373,55 @@ public class test {
 
 //        Grid:2021-06-02 01:31:24.875[1, 4]
 
-        FileOutputStream file = new FileOutputStream("src/main/resources/data/"+"Grid:2021-06-02 01,31,24.875[1, 4]" + ".ser");
-        ObjectOutputStream out = new ObjectOutputStream(file);
-        Object object = null;
-        // Method for serialization of object
-        out.writeObject(object);
+        Hashtable<String, String> type = new Hashtable<>();
+        Vector<String> col = new Vector<>();
+        type.put("name", "java.lang.String");
+        type.put("age", "java.lang.Integer");
+        col.add("name");
+        col.add("age");
+        Bucket b = new Bucket(type, col);
 
-        out.close();
-        file.close();
+        Hashtable h6 = new Hashtable( );
+        h6.put("id", new Integer(55));
+        h6.put("name", new String("six" ) );
+        h6.put("age", new Integer( 6 ) );
+        Record r1 = new Record(h6, "id");
+        Hashtable h7 = new Hashtable( );
+        h7.put("id", new Integer(56));
+        h7.put("name", new String("six" ) );
+        h7.put("age", new Integer( 9 ) );
+        Record r2 = new Record(h7, "id");
+        Hashtable h8 = new Hashtable( );
+        h8.put("id", new Integer(57));
+        h8.put("name", new String("ab" ) );
+        h8.put("age", new Integer( 5 ) );
+        Record r3 = new Record(h8, "id");
+        Hashtable h9 = new Hashtable( );
+        h9.put("id", new Integer(58));
+        h9.put("name", new String("zzz" ) );
+        h9.put("age", new Integer( 11 ) );
+        Record r4 = new Record(h9, "id");
+
+        bucketEntry b1 = new bucketEntry(r1,"SS1");
+        bucketEntry b2 = new bucketEntry(r2,"SS2");
+        bucketEntry b3 = new bucketEntry(r3,"SS3");
+        bucketEntry b4 = new bucketEntry(r4,"SS4");
+
+
+        int i2 = b.searchBucketEntry(b2);
+        b.getEntries().add(i2, b2);
+
+        int i3 = b.searchBucketEntry(b3);
+        b.getEntries().add(i3, b3);
+
+        int i1 = b.searchBucketEntry(b1);
+        b.getEntries().add(i1, b1);
+        int i4 = b.searchBucketEntry(b4);
+        b.getEntries().add(i4, b4);
+
+        for(bucketEntry bb : b.getEntries()){
+            System.out.println(bb.getRow());
+        }
 
 
 

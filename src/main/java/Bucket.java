@@ -33,6 +33,14 @@ public class Bucket implements Serializable {
         }
         else {
             Hashtable<String, Object> r = x.getRow().getContent();
+            if (min.size()==0){
+                for (Map.Entry p : r.entrySet()){
+                    min.put((String) p.getKey(), p.getValue());
+                    max.put((String) p.getKey(), p.getValue());
+                }
+                return;
+            }
+
             for (Map.Entry m : r.entrySet()) {
                 if (columns.contains(m.getKey())) {
                     if (((String) type.get(m.getKey())).equals("java.lang.Integer")) {

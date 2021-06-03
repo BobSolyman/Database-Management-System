@@ -22,7 +22,7 @@ public class Grid implements Serializable {
 
     //multiple variations can point to the same bucket!
 
-    public Grid(String[] columns, Hashtable<String, Object> mi, Hashtable<String, Object> ma, Hashtable<String, String> t) {
+    public Grid(String tableName,String[] columns, Hashtable<String, Object> mi, Hashtable<String, Object> ma, Hashtable<String, String> t) {
         this.columns = new Vector<>();
         this.columns.addAll(Arrays.asList(columns));
         Collections.sort(this.columns);
@@ -31,8 +31,8 @@ public class Grid implements Serializable {
         this.min = mi;
         this.max = ma;
         this.type = t;
-        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-        gridID = (new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(timestamp)).toString() ;
+//        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        gridID = tableName+this.columns.toString();
 
         for (String col : this.columns){
             if (((String)type.get(col)).equals("java.lang.Integer")){

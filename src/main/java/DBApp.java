@@ -265,7 +265,7 @@ public class DBApp implements DBAppInterface{
             return;
         }
 
-        Grid grid= new Grid(columnNames,currentTable.getColNameMin(),currentTable.getColNameMax(),currentTable.getColNameType());
+        Grid grid= new Grid(tableName,columnNames,currentTable.getColNameMin(),currentTable.getColNameMax(),currentTable.getColNameType());
         String clusteringKey=  (String) currentTable.getClusteringKey();
         Vector<Vector> pages= currentTable.getPages();
 
@@ -861,7 +861,29 @@ public class DBApp implements DBAppInterface{
         }
 
         String clusteringKey = db.get(tableName).getClusteringKey();
-        if(containsClusteringKey){
+
+
+        Vector<String> col = (Vector<String>) columnNameValue.keySet();
+        Collections.sort(col);
+        Set<Vector<String>> grids = db.get(tableName).getGrids().keySet();
+        if(db.get(tableName).getGrids().containsKey(col)){
+            Grid grid = (Grid)db.get(tableName).getGrids().get(col);
+            Record r = new Record(columnNameValue, clusteringKey);
+            Vector<Integer> gLoc = grid.getIndex(r);
+            if(grid.getBuckets().containsKey(gLoc)){
+                Cell cell = (Cell) deSerialize(grid.getGridID()+gLoc.toString());
+
+                for(int j=cell.getBuckets().size()-1; j>=0; j++){
+                    Bucket bb = cell.getBuckets().get(j);
+                    for(int i=bb.getEntries().size()-1; i>=0; i++){
+
+                    }
+                }
+
+            }
+
+        }
+        else if(containsClusteringKey){
             Record r = new Record(columnNameValue, clusteringKey);
             int indexP = db.get(tableName).searchPage(r);
             Vector curPage = ((Vector)db.get(tableName).getPages().get(indexP));
@@ -906,7 +928,7 @@ public class DBApp implements DBAppInterface{
                     updateLocation((String) curPage.get(0), p, indexP,false);
                 }
             }
-        }
+        }// end of searching using clusteringkey on pages
         else{
             Record r = new Record(columnNameValue, clusteringKey);
             for (int i=db.get(tableName).getPages().size()-1; i>=0; i--){
@@ -940,7 +962,7 @@ public class DBApp implements DBAppInterface{
                     updateLocation((String) curPage.get(0), p, i,false);
                 }
             }
-        }
+        }// end of brute force search on pages
 
     } //end of method
 
@@ -969,7 +991,7 @@ public class DBApp implements DBAppInterface{
         table = db.get(sqlTerms[0]._strTableName);
         Collections.sort(columns);
         Set<Vector<String>> gridIDs = table.getGrids().keySet();
-        for()
+//        for()
         for(Vector<String> g: gridIDs){
             String ID = (String)table.getGrids().get(g);
             Grid grid = (Grid)deSerialize(ID);
@@ -981,7 +1003,7 @@ public class DBApp implements DBAppInterface{
                     flag = true;
                 }
                 if(flag){
-                    if()
+//                    if()
                 }
             }
         }
@@ -1046,6 +1068,7 @@ public class DBApp implements DBAppInterface{
                 return res;
             }//tbh
         }
+        return  null ;
     }
 
     public static Vector<bucketEntry> queryAND(Vector<bucketEntry> op1, Vector<bucketEntry> op2){
@@ -1164,7 +1187,7 @@ public class DBApp implements DBAppInterface{
 
         catch(IOException ex)
         {
-            System.out.println("IOException is caught");
+            System.out.println("IOException is caught of deserialze line 1168");
         }
         catch(ClassNotFoundException ex)
         {
