@@ -382,23 +382,23 @@ public class test {
         Bucket b = new Bucket(type, col);
 
         Hashtable h6 = new Hashtable( );
-        h6.put("id", new Integer(55));
-        h6.put("name", new String("six" ) );
+        h6.put("id", new Integer(1));
+        h6.put("name", new String("aaa" ) );
         h6.put("age", new Integer( 6 ) );
         Record r1 = new Record(h6, "id");
         Hashtable h7 = new Hashtable( );
-        h7.put("id", new Integer(56));
-        h7.put("name", new String("six" ) );
+        h7.put("id", new Integer(2));
+        h7.put("name", new String("bbb" ) );
         h7.put("age", new Integer( 9 ) );
         Record r2 = new Record(h7, "id");
         Hashtable h8 = new Hashtable( );
-        h8.put("id", new Integer(57));
-        h8.put("name", new String("ab" ) );
+        h8.put("id", new Integer(3));
+        h8.put("name", new String("bbb" ) );
         h8.put("age", new Integer( 5 ) );
         Record r3 = new Record(h8, "id");
         Hashtable h9 = new Hashtable( );
-        h9.put("id", new Integer(58));
-        h9.put("name", new String("zzz" ) );
+        h9.put("id", new Integer(4));
+        h9.put("name", new String("z" ) );
         h9.put("age", new Integer( 11 ) );
         Record r4 = new Record(h9, "id");
 
@@ -407,6 +407,8 @@ public class test {
         bucketEntry b3 = new bucketEntry(r3,"SS3");
         bucketEntry b4 = new bucketEntry(r4,"SS4");
 
+        int i1 = b.searchBucketEntry(b1);
+        b.getEntries().add(i1, b1);
 
         int i2 = b.searchBucketEntry(b2);
         b.getEntries().add(i2, b2);
@@ -414,10 +416,14 @@ public class test {
         int i3 = b.searchBucketEntry(b3);
         b.getEntries().add(i3, b3);
 
-        int i1 = b.searchBucketEntry(b1);
-        b.getEntries().add(i1, b1);
+
         int i4 = b.searchBucketEntry(b4);
         b.getEntries().add(i4, b4);
+
+        System.out.println(i1);
+        System.out.println(i2);
+        System.out.println(i3);
+        System.out.println(i4);
 
         for(bucketEntry bb : b.getEntries()){
             System.out.println(bb.getRow());
