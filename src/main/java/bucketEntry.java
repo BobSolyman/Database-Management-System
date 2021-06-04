@@ -24,4 +24,10 @@ public class bucketEntry implements Serializable {
     public void setPageLoc(String pageLoc) {
         this.pageLoc = pageLoc;
     }
+
+    @Override
+    public String toString() {
+        return  row+"" ;
+
+    }
 }

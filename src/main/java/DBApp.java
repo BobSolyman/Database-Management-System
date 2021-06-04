@@ -1078,40 +1078,154 @@ public class DBApp implements DBAppInterface{
             if(!table.getColNameType().containsKey(colName))
                 throw new DBAppException("COLUMN DOES NOT EXIST!!!");
 
-            if(!operator.equals(">")||!operator.equals(">=")||!operator.equals("<")||!operator.equals("<=")||!operator.equals("=")||!operator.equals("!=")){
+            if(!operator.equals(">")&&!operator.equals(">=")&&!operator.equals("<")&&!operator.equals("<=")&&!operator.equals("=")&&!operator.equals("!=")){
                 throw new DBAppException("OPERATOR NOT SUPPORTED!!!");
             }
 
             columns.add(colName);
         }
         // we need to check on the operator !!!!!
+        for (int i = 0 ; i < arrayOperators.length ; i++){
+            if (!arrayOperators[i].equals("AND") && !arrayOperators[i].equals("OR") && !arrayOperators[i].equals("XOR")){
+                throw new DBAppException("OPERATOR NOT SUPPORTED!!!");
+            }
+        }
 
         table = db.get(sqlTerms[0]._strTableName);
-        Collections.sort(columns);
+
         Set<Vector<String>> gridIDs = table.getGrids().keySet();
-//        for()
-        for(Vector<String> g: gridIDs){
-            String ID = (String)table.getGrids().get(g);
-            Grid grid = (Grid)deSerialize(ID);
-            boolean flag = false;
-            Vector<String> commonColumns = new Vector<>();
-            for(String column : columns){
-                if(g.contains(column)){
-                    commonColumns.add(column);
-                    flag = true;
+        Vector<bucketEntry> op1 = new Vector<>();
+        boolean firsttime = true;
+
+        Vector<String> andedColumns = new Vector<>();
+        boolean andFirst = true ;
+        Vector<SQLTerm> andedTerms = new Vector<>();
+        if(arrayOperators.length==0){
+            op1 = getTerm(sqlTerms[0]._strTableName, sqlTerms[0]._strColumnName, sqlTerms[0]._objValue, sqlTerms[0]._strOperator);
+            return op1.iterator();
+        }
+        for(int i=0; i<arrayOperators.length; i++){
+            String t=sqlTerms[i]._strTableName;
+            String col=sqlTerms[i]._strColumnName;
+            String op=sqlTerms[i]._strOperator;
+            Object val=sqlTerms[i]._objValue;
+            String t2=sqlTerms[i+1]._strTableName;
+            String col2=sqlTerms[i+1]._strColumnName;
+            String op2=sqlTerms[i+1]._strOperator;
+            Object val2=sqlTerms[i+1]._objValue;
+
+            if(arrayOperators[i].equals("AND")){
+                if (andFirst && op.equals("=") && op2.equals("=")){
+                    andFirst = false ;
+                    andedColumns.add(col);
+                    andedTerms.add(sqlTerms[i]);
+                    andedColumns.add(col2);
+                    andedTerms.add(sqlTerms[i+1]);
+                    int c = 1;
+                    for ( c = i+1 ; c < arrayOperators.length ; c++){
+                        if (arrayOperators[c].equals("AND") && sqlTerms[c+1]._strOperator.equals("=")){
+                            andedColumns.add(col2);
+                            andedTerms.add(sqlTerms[c+1]);
+                        }
+                        else {
+                            break;
+                        }
+                    }
+                    Collections.sort(andedColumns);
+                    Set<Vector<String>> Grids = table.getGrids().keySet();
+                    Vector<String> commonCol = new Vector<>();
+                    for(Vector<String> m :Grids){
+                        if (andedColumns.containsAll(m)){
+                            if (m.size()>commonCol.size())
+                                commonCol = m ;
+                        }
+                    }
+                    if (commonCol.size()>1){
+                        op1=getMultiDimTerm((Grid) deSerialize((String) table.getGrids().get(commonCol)),andedTerms, t2);
+                        firsttime = false ;
+                        i = c-1;
+                    }
+                    else {
+                        if (firsttime) {
+                            firsttime = false;
+                            op1 = getTerm(t, col, val, op);
+                        }
+                        op1 = queryAND(op1, getTerm(t2, col2, val2, op2));
+                    }
+
+
+                }else {
+                    if (firsttime) {
+                        firsttime = false;
+                        op1 = getTerm(t, col, val, op);
+                    }
+                    op1 = queryAND(op1, getTerm(t2, col2, val2, op2));
                 }
-                if(flag){
-//                    if()
+            }
+            else if(arrayOperators[i].equals("OR")){
+                if(firsttime){
+                    firsttime=false;
+                    op1 = getTerm(t, col, val, op);
                 }
+                op1 = queryOR(op1, getTerm(t2, col2, val2, op2));
+            }
+            else if(arrayOperators[i].equals("XOR")){
+                if(firsttime){
+                    firsttime=false;
+                    op1 = getTerm(t, col, val, op);
+                }
+                op1 = queryXOR(op1, getTerm(t2, col2, val2, op2));
+
             }
         }
 
 
 
-        return null;
+
+
+        return op1.iterator();
     }
 
-    public Vector<bucketEntry> getTerm(String tableName, String columnName, String columnValue, String operator) {
+    private Vector<bucketEntry> getMultiDimTerm(Grid grid, Vector<SQLTerm> andedTerms,String tableName) {
+        Vector<bucketEntry> BEs = new Vector<>();
+        Hashtable <String , Object>  columnNameValue = new Hashtable<>();
+        for (int i = 0 ; i<andedTerms.size();i++){
+            SQLTerm x = andedTerms.get(i);
+            columnNameValue.put(x._strColumnName,x._objValue);
+        }
+        Record r = new Record(columnNameValue, db.get(tableName).getClusteringKey());
+        Vector<Integer> gLoc = grid.getIndex(r);
+        if(grid.getBuckets().containsKey(gLoc)) {
+            Cell cell = (Cell) deSerialize(grid.getGridID() + gLoc.toString());
+            bucketEntry bE = new bucketEntry(r, "somewhere");
+            int bucketCounter = cell.searchBuckets(bE);
+            int entryCounter = cell.getBuckets().get(bucketCounter).searchBucketEntry(bE);
+            boolean firsttime = true ;
+            for (int i = bucketCounter ; i <cell.getBuckets().size();i++){
+
+                for (int j = 0 ; j<cell.getBuckets().get(i).getEntries().size();j++){
+                    if (firsttime){
+                        firsttime = false ;
+                        j = entryCounter;
+                    }
+                    bucketEntry bbE = cell.getBuckets().get(i).getEntries().get(j);
+                    Record record = bbE.getRow();
+                    for (SQLTerm x : andedTerms){
+                        if (!x._objValue.equals(record.getContent().get(x._strColumnName))){
+                            return BEs;
+                        }
+                    }
+                    BEs.add(bbE);
+                }
+
+            }
+
+        }
+
+        return BEs;
+    }
+
+    public Vector<bucketEntry> getTerm(String tableName, String columnName, Object columnValue, String operator) {
         Vector<bucketEntry> BEs = new Vector<>();
         DBTable table = db.get(tableName);
         Vector<String> col = new Vector<>();
