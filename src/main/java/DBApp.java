@@ -1519,7 +1519,7 @@ public void validate(String tableName, String clusteringKey, Hashtable<String, S
     }
 }
 public void updateCsv(String tableName,String[] columnNames) {
-    List<String> columns = new ArrayList<>(Arrays.asList(columnNames));
+    List<String> columns = new Vector<>(Arrays.asList(columnNames));
     try {
         File inputFile = new File("src/main/resources/metadata.csv");
 
@@ -1538,7 +1538,11 @@ public void updateCsv(String tableName,String[] columnNames) {
         reader.close();
 
 // Write to CSV file which is open
-        CSVWriter writer = new CSVWriter(new FileWriter(inputFile));
+        CSVWriter writer = new CSVWriter(new FileWriter(inputFile),
+                CSVWriter.DEFAULT_SEPARATOR,
+                CSVWriter.NO_QUOTE_CHARACTER,
+                CSVWriter.DEFAULT_ESCAPE_CHARACTER,
+                CSVWriter.RFC4180_LINE_END);
         writer.writeAll(csvBody);
         writer.flush();
         writer.close();
