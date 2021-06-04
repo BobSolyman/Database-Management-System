@@ -1,3 +1,6 @@
+import com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
+
 import java.io.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -78,23 +81,39 @@ public class DBApp implements DBAppInterface{
 
 
 
-        Set <String> keys =db.keySet();
-        for(String key: keys){
-            File grids = new File("src/main/resources/"+key+"Grids");
-            if (!grids.exists()) {
-                db.get(key).setGrids(new Hashtable<Vector<String>, String>());
-            }
-            else{
-                try {
-                    db.get(key).setGrids((Hashtable<Vector<String>, String>) deSerialize(key+"Grids"));
-                }
-                catch (Exception e){
-                    System.out.println("GRIDS NOT FOUND");
-                }
-            }
+//        Set <String> keys =db.keySet();
+//        for(String key: keys){
+//            File grids = new File("src/main/resources/"+key+"Grids");
+//            if (!grids.exists()) {
+//                db.get(key).setGrids(new Hashtable<Vector<String>, String>());
+//            }
+//            else{
+//                try {
+//                    db.get(key).setGrids((Hashtable<Vector<String>, String>) deSerialize(key+"Grids"));
+//                }
+//                catch (Exception e){
+//                    System.out.println("GRIDS NOT FOUND");
+//                }
+//            }
+//
+//        }
 
+    }
+
+    public static void getGrid(DBTable table){
+        String tableName= table.getName();
+        File grids = new File("src/main/resources/"+tableName+"Grids");
+        if (!grids.exists()) {
+            table.setGrids(new Hashtable<Vector<String>, String>());
         }
-
+        else{
+            try {
+                table.setGrids((Hashtable<Vector<String>, String>) deSerialize(tableName+"Grids"));
+            }
+            catch (Exception e){
+                System.out.println("GRIDS NOT FOUND");
+            }
+        }
     }
 
     public static int getFileSize(String file) throws IOException {
@@ -152,6 +171,7 @@ public class DBApp implements DBAppInterface{
                 Hashtable<String,String> newColMax = new Hashtable<>();
                 newColMax.put(colName,max);
                 DBTable newTable = new DBTable(tableName,cKey,newColType);
+                getGrid(newTable);
                 if (cKey!=null)
                     cKey=null;
                 newTable.setColNameMin(newColMin);
@@ -334,6 +354,7 @@ public class DBApp implements DBAppInterface{
         currentTable.addGrid(grid);
         serialize(grid, (String)grid.getGridID());
         serialize(currentTable.getGrids(), tableName+"Grids");
+        updateCsv(tableName, columnNames);
     }// end of method
 
     public void insertIntoTable(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException, ParseException {
@@ -1260,7 +1281,7 @@ public class DBApp implements DBAppInterface{
         }
         return output;
     }
-    public Object deSerialize(String filename){
+    public static Object deSerialize(String filename){
         Object output = null;
 
         try
@@ -1495,6 +1516,34 @@ public void validate(String tableName, String clusteringKey, Hashtable<String, S
     for(Map.Entry m: colNameType.entrySet()){
         if(!colNameMin.containsKey(m.getKey()) || !colNameMax.containsKey(m.getKey()))
             throw new DBAppException("Table content mismatch");
+    }
+}
+public void updateCsv(String tableName,String[] columnNames) {
+    List<String> columns = new ArrayList<>(Arrays.asList(columnNames));
+    try {
+        File inputFile = new File("src/main/resources/metadata.csv");
+
+// Read existing file
+        CSVReader reader = new CSVReader(new FileReader(inputFile));
+        List<String[]> csvBody = reader.readAll();
+
+// check and update
+        for(String[] line : csvBody){
+            if(line[0].equals(tableName)){
+                if(columns.contains(line[1])){
+                    line[4] = "TRUE";
+                }
+            }
+        }
+        reader.close();
+
+// Write to CSV file which is open
+        CSVWriter writer = new CSVWriter(new FileWriter(inputFile));
+        writer.writeAll(csvBody);
+        writer.flush();
+        writer.close();
+    }catch(Exception e){
+        System.out.println("error occurred while updating index");
     }
 }
 
