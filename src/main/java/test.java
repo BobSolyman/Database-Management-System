@@ -394,7 +394,7 @@ public class test {
         Hashtable h8 = new Hashtable( );
         h8.put("id", new Integer(3));
         h8.put("name", new String("bbb" ) );
-        h8.put("age", new Integer( 5 ) );
+        h8.put("age", new Integer( 9 ) );
         Record r3 = new Record(h8, "id");
         Hashtable h9 = new Hashtable( );
         h9.put("id", new Integer(4));

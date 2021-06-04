@@ -1,4 +1,5 @@
 import java.io.Serializable;
+import java.util.Date;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.Vector;
@@ -51,6 +52,23 @@ public class Record implements Comparable, Serializable {
         return this.getData().get(0).compareTo(r.getData().get(0));
     }
 
+    public int compareToValue(Object o , String col ,String type){
 
+        Object x = this.getContent().get(col);
+        if  (type.equals("java.lang.Integer")){
+            return ((Integer)x).compareTo(((Integer)o));
+        }
+        else if (type.equals("java.lang.Double")){
+            return ((Double)x).compareTo(((Double)o));
+        }
+        else if (type.equals("java.lang.String")){
+            return ((String)x).compareTo(((String)o));
+
+        }
+        else{
+            return ((Date)x).compareTo(((Date)o));
+        }
+
+    }
 
 }

@@ -49,8 +49,6 @@ public class DBApp implements DBAppInterface{
         }catch(Exception e){
             e.printStackTrace();
         }
-
-
         File theDir = new File("src/main/resources/data");
         if (!theDir.exists()) {
             theDir.mkdirs();
@@ -81,40 +79,40 @@ public class DBApp implements DBAppInterface{
 
 
 
-//        Set <String> keys =db.keySet();
-//        for(String key: keys){
-//            File grids = new File("src/main/resources/"+key+"Grids");
-//            if (!grids.exists()) {
-//                db.get(key).setGrids(new Hashtable<Vector<String>, String>());
-//            }
-//            else{
-//                try {
-//                    db.get(key).setGrids((Hashtable<Vector<String>, String>) deSerialize(key+"Grids"));
-//                }
-//                catch (Exception e){
-//                    System.out.println("GRIDS NOT FOUND");
-//                }
-//            }
-//
+        Set <String> keys =db.keySet();
+        for(String key: keys){
+            File grids = new File("src/main/resources/"+key+"Grids");
+            if (!grids.exists()) {
+                db.get(key).setGrids(new Hashtable<Vector<String>, String>());
+            }
+            else{
+                try {
+                    db.get(key).setGrids((Hashtable<Vector<String>, String>) deSerialize(key+"Grids"));
+                }
+                catch (Exception e){
+                    System.out.println("GRIDS NOT FOUND");
+                }
+            }
+
+        }
+
+    }
+            // not useful in anyway xD
+//    public static void getGrid(DBTable table){
+//        String tableName= table.getName();
+//        File grids = new File("src/main/resources/"+tableName+"Grids");
+//        if (!grids.exists()) {
+//            table.setGrids(new Hashtable<Vector<String>, String>());
 //        }
-
-    }
-
-    public static void getGrid(DBTable table){
-        String tableName= table.getName();
-        File grids = new File("src/main/resources/"+tableName+"Grids");
-        if (!grids.exists()) {
-            table.setGrids(new Hashtable<Vector<String>, String>());
-        }
-        else{
-            try {
-                table.setGrids((Hashtable<Vector<String>, String>) deSerialize(tableName+"Grids"));
-            }
-            catch (Exception e){
-                System.out.println("GRIDS NOT FOUND");
-            }
-        }
-    }
+//        else{
+//            try {
+//                table.setGrids((Hashtable<Vector<String>, String>) deSerialize(tableName+"Grids"));
+//            }
+//            catch (Exception e){
+//                System.out.println("GRIDS NOT FOUND");
+//            }
+//        }
+//    }
 
     public static int getFileSize(String file) throws IOException {
        int i= 0;
@@ -171,7 +169,7 @@ public class DBApp implements DBAppInterface{
                 Hashtable<String,String> newColMax = new Hashtable<>();
                 newColMax.put(colName,max);
                 DBTable newTable = new DBTable(tableName,cKey,newColType);
-                getGrid(newTable);
+//                getGrid(newTable);
                 if (cKey!=null)
                     cKey=null;
                 newTable.setColNameMin(newColMin);
@@ -354,7 +352,7 @@ public class DBApp implements DBAppInterface{
         currentTable.addGrid(grid);
         serialize(grid, (String)grid.getGridID());
         serialize(currentTable.getGrids(), tableName+"Grids");
-        updateCsv(tableName, columnNames);
+//        updateCsv(tableName, columnNames);
     }// end of method
 
     public void insertIntoTable(String tableName, Hashtable<String, Object> colNameValue) throws DBAppException, ParseException {
@@ -913,9 +911,11 @@ public class DBApp implements DBAppInterface{
                         bucketEntry bee = bb.getEntries().get(i);
                         boolean belongs = true;
                         for(Map.Entry m : columnNameValue.entrySet()){
-                            if(bee.getRow().getContent().get(m.getKey())!=m.getValue()){
-                                belongs = false;
-                                break;
+                            if(bee.getRow()!=null){
+                                if(bee.getRow().getContent().get(m.getKey())!=m.getValue()){
+                                    belongs = false;
+                                    break;
+                                }
                             }
                         }
                         if(belongs){
@@ -1084,6 +1084,8 @@ public class DBApp implements DBAppInterface{
 
             columns.add(colName);
         }
+        // we need to check on the operator !!!!!
+
         table = db.get(sqlTerms[0]._strTableName);
         Collections.sort(columns);
         Set<Vector<String>> gridIDs = table.getGrids().keySet();
@@ -1110,79 +1112,341 @@ public class DBApp implements DBAppInterface{
     }
 
     public Vector<bucketEntry> getTerm(String tableName, String columnName, String columnValue, String operator) {
-        Vector<bucketEntry> res = new Vector<>();
+        Vector<bucketEntry> BEs = new Vector<>();
         DBTable table = db.get(tableName);
-        Set<Vector<String>> gridIDs = table.getGrids().keySet();
-        for (Vector<String> g : gridIDs) {
-            String ID = (String) table.getGrids().get(g);
-            Grid grid = (Grid) deSerialize(ID);
-            if (grid.getColumns().size() > 1) {
-                continue;
-            }
-            boolean flag = false;
-            if (g.contains(columnName)) {
-                flag = true;
-                Hashtable<String, Object> data = new Hashtable<>();
-                data.put(columnName, columnValue);
-                Record gRecord = new Record(data, "1");
-                Vector<Integer> gLoc = grid.getIndex(gRecord);
-                Cell cell = (Cell) deSerialize((String) grid.getBuckets().get(gLoc));
-                bucketEntry bE = new bucketEntry(gRecord, "somewhere");
-                int indexB = cell.searchBuckets(bE);
-                Bucket b = cell.getBuckets().get(indexB);
-                int indexBE = b.searchBucketEntry(bE);
-                Vector<bucketEntry> BEs = new Vector<>();
-                for(Bucket bb : cell.getBuckets()){
-                    BEs.addAll(bb.getEntries());
-                }
-//                int secIndex = BEs.lastIndexOf(columnValue);
-//                int firstIndex = BEs.indexOf(columnValue);
-                // what will happen if specific cell doesn't exist?
+        Vector<String> col = new Vector<>();
+        col.add(columnName);
+        if(table.getGrids().containsKey(col)){
+            Grid g = (Grid) deSerialize((String)table.getGrids().get(col));
+            Hashtable<String, Object> data = new Hashtable<>();
+            data.put(columnName, columnValue);
+            Record gRecord = new Record(data, table.getClusteringKey());
+            Vector<Integer> gLoc = g.getIndex(gRecord);
                 if (operator.equals("=")) {
-
+                    if (g.getBuckets().containsKey(gLoc)) {
+                        Cell cell = (Cell) deSerialize((String) g.getBuckets().get(gLoc));
+                        bucketEntry bE = new bucketEntry(gRecord, "somewhere");
+                        int indexB = cell.searchBuckets(bE);
+                        Bucket b = cell.getBuckets().get(indexB);
+                        int indexBE = b.searchBucketEntry(bE);
+                    boolean firsttime = true;
+                    for (int i = indexB; i < cell.getBuckets().size(); i++) {
+                        Bucket bb = cell.getBuckets().get(i);
+                        for (int j = 0; j < bb.getEntries().size(); j++) {
+                            if (firsttime) {
+                                firsttime = false;
+                                j = indexBE;
+                            }
+                            bucketEntry bee = bb.getEntries().get(j);
+                            if (bee.getRow() != null) {
+                                if (bee.getRow().getContent().get(columnName).equals(columnValue)) {
+                                    BEs.add(bee);
+                                } else {
+                                    return BEs;
+                                }
+                            }
+                        }
+                    }
                 }
-                else if(operator.equals(">")){
-
+                    return BEs;
+                } else if (operator.equals(">")) {
+                    boolean firsttime = true;
+                    boolean firsttimeCell = true;
+                    Cell cell = (Cell) deSerialize((String) g.getBuckets().get(gLoc));
+                    bucketEntry bE = new bucketEntry(gRecord, "somewhere");
+                    int indexB = cell.searchBuckets(bE);
+                    Bucket b = cell.getBuckets().get(indexB);
+                    int indexBE = b.searchBucketEntry(bE);
+                    for(int k=gLoc.get(0); k<10; k++) {
+                        Vector<Integer> count = new Vector<>();
+                        count.add(k);
+                        if(g.getBuckets().containsKey(count)) {
+                            cell = (Cell) deSerialize((String) g.getBuckets().get(count));
+                            for (int i = 0; i < cell.getBuckets().size(); i++) {
+                                if(firsttimeCell){
+                                    firsttimeCell = false;
+                                    i= indexB;
+                                }
+                                Bucket bb = cell.getBuckets().get(i);
+                                for (int j = 0; j < bb.getEntries().size(); j++) {
+                                    if (firsttime) {
+                                        firsttime = false;
+                                        j = indexBE+1;
+                                    }
+                                    bucketEntry bee = bb.getEntries().get(j);
+                                    if (bee.getRow() != null) {
+                                        if(!(bee.getRow().getContent().get(columnName).equals(columnValue))){
+                                            BEs.add(bee);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return  BEs;
+                } else if (operator.equals(">=")) {
+                    boolean firsttime = true;
+                    boolean firsttimeCell = true;
+                    Cell cell = (Cell) deSerialize((String) g.getBuckets().get(gLoc));
+                    bucketEntry bE = new bucketEntry(gRecord, "somewhere");
+                    int indexB = cell.searchBuckets(bE);
+                    Bucket b = cell.getBuckets().get(indexB);
+                    int indexBE = b.searchBucketEntry(bE);
+                    for(int k=gLoc.get(0); k<10; k++) {
+                        Vector<Integer> count = new Vector<>();
+                        count.add(k);
+                        if(g.getBuckets().containsKey(count)) {
+                            cell = (Cell) deSerialize((String) g.getBuckets().get(count));
+                            for (int i = 0; i < cell.getBuckets().size(); i++) {
+                                if(firsttimeCell){
+                                    firsttimeCell = false;
+                                    i= indexB;
+                                }
+                                Bucket bb = cell.getBuckets().get(i);
+                                for (int j = 0; j < bb.getEntries().size(); j++) {
+                                    if (firsttime) {
+                                        firsttime = false;
+                                        j = indexBE;
+                                    }
+                                    bucketEntry bee = bb.getEntries().get(j);
+                                    if (bee.getRow() != null) {
+                                        BEs.add(bee);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return  BEs;
+                } else if (operator.equals("<")) {
+                    Cell cell = (Cell) deSerialize((String) g.getBuckets().get(gLoc));
+                    bucketEntry bE = new bucketEntry(gRecord, "somewhere");
+                    int indexB = cell.searchBuckets(bE);
+                    Bucket b = cell.getBuckets().get(indexB);
+                    int indexBE = b.searchBucketEntry(bE);
+                    for(int k=0; k<=gLoc.get(0); k++) {
+                        Vector<Integer> count = new Vector<>();
+                        count.add(k);
+                        if(g.getBuckets().containsKey(count)) {
+                            cell = (Cell) deSerialize((String) g.getBuckets().get(count));
+                            for (int i = 0; i < cell.getBuckets().size(); i++) {
+                                Bucket bb = cell.getBuckets().get(i);
+                                for (int j = 0; j < bb.getEntries().size(); j++) {
+                                    bucketEntry bee = bb.getEntries().get(j);
+                                    if (bee.getRow() != null) {
+                                        if(bee.getRow().getContent().get(columnName).equals(columnValue)){
+                                            return BEs;
+                                        }
+                                        BEs.add(bee);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return  BEs;
+                } else if (operator.equals("<=")) {
+                    boolean flag = false ;
+                    for(int k=0; k<=gLoc.get(0); k++) {
+                        Vector<Integer> count = new Vector<>();
+                        count.add(k);
+                        if(g.getBuckets().containsKey(count)) {
+                            Cell cell = (Cell) deSerialize((String) g.getBuckets().get(count));
+                            for (int i = 0; i < cell.getBuckets().size(); i++) {
+                                Bucket bb = cell.getBuckets().get(i);
+                                for (int j = 0; j < bb.getEntries().size(); j++) {
+                                    bucketEntry bee = bb.getEntries().get(j);
+                                    if (bee.getRow() != null) {
+                                        if(bee.getRow().getContent().get(columnName).equals(columnValue) && !flag){
+                                            flag = true;
+                                        }
+                                        else if (flag && !bee.getRow().getContent().get(columnName).equals(columnValue)){
+                                            return BEs ;
+                                        }
+                                        BEs.add(bee);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return  BEs;
+                } else if (operator.equals("!=")) {
+                    for(int k=0; k<10; k++) {
+                        Vector<Integer> count = new Vector<>();
+                        count.add(k);
+                        if(g.getBuckets().containsKey(count)) {
+                            Cell cell = (Cell) deSerialize((String) g.getBuckets().get(count));
+                            for (int i = 0; i < cell.getBuckets().size(); i++) {
+                                Bucket bb = cell.getBuckets().get(i);
+                                for (int j = 0; j < bb.getEntries().size(); j++) {
+                                    bucketEntry bee = bb.getEntries().get(j);
+                                    if (bee.getRow() != null) {
+                                        if(!bee.getRow().getContent().get(columnName).equals(columnValue)){
+                                            BEs.add(bee);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return  BEs;
                 }
-                else if(operator.equals(">=")){
-
-                }
-                else if(operator.equals("<")){
-
-                }
-                else if(operator.equals("<=")){
-
-                }
-                else if(operator.equals("!=")){
-
-                }
-//                int i = 0;
-//                for(i=0; i<cell.getBuckets().size(); i++){
-//                    if(cell.getBuckets().get(i).getEntries().size()>=secIndex){
-//                        secIndex -= cell.getBuckets().get(i).getEntries().size();
-//                        continue;
-//                    }
-//                    else {
-//                        break;
-//                    }
-//                }
-//                res.add(0,gLoc);
-//                Vector<Integer> runner = new Vector<>(indexB);
-//                runner.add(0,indexB);
-//                res.add(1, runner);
-//                runner.remove(0);
-//                runner.add(0, indexBE);
-//                res.add(2, runner);
-//                runner.remove(0);
-//                runner.add(0, i);
-//                res.add(3, runner);
-//                runner.remove(0);
-//                runner.add(0, secIndex);
-//                res.add(4, runner);
-//                return res;
-            }//tbh
         }
-        return  null ;
+
+
+        //check if column is clustering
+        if (columnName.equals(table.getClusteringKey())){
+            Hashtable<String, Object> data = new Hashtable<>();
+            data.put(columnName, columnValue);
+            Record r = new Record(data, table.getClusteringKey());
+            int indexP = db.get(tableName).searchPage(r);
+            Vector curPage = ((Vector)db.get(tableName).getPages().get(indexP));
+            Page p = deSerializePage((String)curPage.get(0));
+            int[] indexR = p.searchRecord(r);
+
+
+            if (operator.equals("=")){
+                if (indexR[1]==0){
+//                System.out.println("Record not found");
+                    return BEs ;
+                }
+                else {
+                    bucketEntry bE = new bucketEntry((Record)p.getTuples().get(indexR[0]),(String)curPage.get(0));
+                    BEs.add(bE);
+                }
+                return BEs;
+            }
+            else if(operator.equals(">=")){
+                boolean firsttime = true ;
+                for (int i = indexP; i < db.get(tableName).getPages().size();i++){
+                    curPage = ((Vector)db.get(tableName).getPages().get(i));
+                    p = deSerializePage((String)curPage.get(0));
+                    for(int j = 0 ; j < p.getTuples().size();j++){
+                        if (firsttime){
+                            firsttime = false;
+                            j = indexR[0];
+                        }
+                        if (((Record)p.getTuples().get(j)).compareToValue(columnValue,columnName,(String) table.getColNameType().get(columnName))>=0){
+                            bucketEntry bE = new bucketEntry((Record)p.getTuples().get(j),(String)curPage.get(0));
+                            BEs.add(bE);
+                        }
+                    }
+                }
+                return BEs;
+            }
+            else if(operator.equals(">")){
+                boolean firsttime = true ;
+                for (int i = indexP; i < db.get(tableName).getPages().size();i++){
+                    curPage = ((Vector)db.get(tableName).getPages().get(i));
+                    p = deSerializePage((String)curPage.get(0));
+                    for(int j = 0 ; j < p.getTuples().size();j++){
+                        if (firsttime){
+                            firsttime = false;
+                            j = indexR[0];
+                        }
+                        if (((Record)p.getTuples().get(j)).compareToValue(columnValue,columnName,(String) table.getColNameType().get(columnName))>0){
+                            bucketEntry bE = new bucketEntry((Record)p.getTuples().get(j),(String)curPage.get(0));
+                            BEs.add(bE);
+                        }
+                    }
+                }
+                return BEs;
+
+            }
+            else if(operator.equals("<=")){
+                for (int i = 0; i <= indexP;i++){
+                    curPage = ((Vector)db.get(tableName).getPages().get(i));
+                    p = deSerializePage((String)curPage.get(0));
+                    for(int j = 0 ; j < p.getTuples().size();j++){
+                        if (((Record)p.getTuples().get(j)).compareToValue(columnValue,columnName,(String) table.getColNameType().get(columnName))<=0){
+                            bucketEntry bE = new bucketEntry((Record)p.getTuples().get(j),(String)curPage.get(0));
+                            BEs.add(bE);
+                        }
+                        else {
+                            return BEs;
+                        }
+                    }
+                }
+                return BEs;
+            }
+            else if(operator.equals("<")){
+                for (int i = 0; i <=indexP;i++){
+                    curPage = ((Vector)db.get(tableName).getPages().get(i));
+                    p = deSerializePage((String)curPage.get(0));
+                    for(int j = 0 ; j < p.getTuples().size();j++){
+                        if (((Record)p.getTuples().get(j)).compareToValue(columnValue,columnName,(String) table.getColNameType().get(columnName))<0){
+                            bucketEntry bE = new bucketEntry((Record)p.getTuples().get(j),(String)curPage.get(0));
+                            BEs.add(bE);
+                        }
+                        else {
+                            return BEs;
+                        }
+                    }
+                }
+                return BEs;
+
+            }
+            else if(operator.equals("!=")){
+                for (int i = 0; i < db.get(tableName).getPages().size();i++){
+                    curPage = ((Vector)db.get(tableName).getPages().get(i));
+                    p = deSerializePage((String)curPage.get(0));
+                    for(int j = 0 ; j < p.getTuples().size();j++){
+                        if (((Record)p.getTuples().get(j)).compareToValue(columnValue,columnName,(String) table.getColNameType().get(columnName))!=0){
+                            bucketEntry bE = new bucketEntry((Record)p.getTuples().get(j),(String)curPage.get(0));
+                            BEs.add(bE);
+                        }
+                    }
+                }
+                return BEs;
+            }
+        }// end of IF clusteringKey
+
+        // if not then brute force :)
+        else{
+            for (int i = 0; i < db.get(tableName).getPages().size();i++){
+                Vector curPage = ((Vector)db.get(tableName).getPages().get(i));
+                Page p = deSerializePage((String)curPage.get(0));
+                for(int j = 0 ; j < p.getTuples().size();j++){
+                    if (operator.equals("=")){
+                        if (((Record)p.getTuples().get(j)).compareToValue(columnValue,columnName,(String) table.getColNameType().get(columnName))==0){
+                            bucketEntry bE = new bucketEntry((Record)p.getTuples().get(j),(String)curPage.get(0));
+                            BEs.add(bE);
+                        }
+                    }
+                    else if(operator.equals(">=")) {
+                        if (((Record)p.getTuples().get(j)).compareToValue(columnValue,columnName,(String) table.getColNameType().get(columnName))>=0){
+                            bucketEntry bE = new bucketEntry((Record)p.getTuples().get(j),(String)curPage.get(0));
+                            BEs.add(bE);
+                        }
+                    }
+                    else if(operator.equals(">")) {
+                        if (((Record)p.getTuples().get(j)).compareToValue(columnValue,columnName,(String) table.getColNameType().get(columnName))>0){
+                            bucketEntry bE = new bucketEntry((Record)p.getTuples().get(j),(String)curPage.get(0));
+                            BEs.add(bE);
+                        }
+                    }
+                    else if(operator.equals("<=")) {
+                        if (((Record)p.getTuples().get(j)).compareToValue(columnValue,columnName,(String) table.getColNameType().get(columnName))<=0){
+                            bucketEntry bE = new bucketEntry((Record)p.getTuples().get(j),(String)curPage.get(0));
+                            BEs.add(bE);
+                        }
+                    }
+                    else if(operator.equals("<")) {
+                        if (((Record)p.getTuples().get(j)).compareToValue(columnValue,columnName,(String) table.getColNameType().get(columnName))<0){
+                            bucketEntry bE = new bucketEntry((Record)p.getTuples().get(j),(String)curPage.get(0));
+                            BEs.add(bE);
+                        }
+                    }
+                    else if(operator.equals("!=")) {
+                        if (((Record)p.getTuples().get(j)).compareToValue(columnValue,columnName,(String) table.getColNameType().get(columnName))!=0){
+                            bucketEntry bE = new bucketEntry((Record)p.getTuples().get(j),(String)curPage.get(0));
+                            BEs.add(bE);
+                        }
+                    }
+
+                }
+            }
+            return BEs;
+        }
+        return  BEs ;
     }
 
     public static Vector<bucketEntry> queryAND(Vector<bucketEntry> op1, Vector<bucketEntry> op2){
@@ -1204,8 +1468,8 @@ public class DBApp implements DBAppInterface{
     }
 
     public static Vector<bucketEntry> queryXOR(Vector<bucketEntry> op1, Vector<bucketEntry> op2){
-        Vector<bucketEntry> b = queryAND(op1,op2);
-        b.removeAll(queryOR(op1,op2));
+        Vector<bucketEntry> b = queryOR(op1,op2);
+        b.removeAll(queryAND(op1,op2));
         return b;
     }
 
@@ -1526,6 +1790,7 @@ public void updateCsv(String tableName,String[] columnNames) {
 // Read existing file
         CSVReader reader = new CSVReader(new FileReader(inputFile));
         List<String[]> csvBody = reader.readAll();
+        System.out.println(csvBody);
 
 // check and update
         for(String[] line : csvBody){
