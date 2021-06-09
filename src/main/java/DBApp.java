@@ -719,7 +719,9 @@ public class DBApp implements DBAppInterface{
 
 
         //by indices
-        Vector<String> columns = (Vector<String>) columnNameValue.keySet();
+        Set<String> columnsSet = columnNameValue.keySet();
+        Vector<String> columns = new Vector<>();
+        columns.addAll(columnsSet);
         Collections.sort(columns);
         Set<Vector<String>> Grids = db.get(tableName).getGrids().keySet();
         for(Vector<String> g: Grids){
@@ -832,7 +834,9 @@ public class DBApp implements DBAppInterface{
         String clusteringKey = db.get(tableName).getClusteringKey();
 
 
-        Vector<String> col = (Vector<String>) columnNameValue.keySet();
+        Set<String> columnsSet = columnNameValue.keySet();
+        Vector<String> col = new Vector<>();
+        col.addAll(columnsSet);
         Collections.sort(col);
         Set<Vector<String>> Grids = db.get(tableName).getGrids().keySet();
         Vector<String> commonCol = new Vector<>();
@@ -1216,6 +1220,19 @@ public class DBApp implements DBAppInterface{
                     boolean firsttime = true;
                     boolean firsttimeCell = true;
                     Cell cell = (Cell) deSerialize((String) g.getBuckets().get(gLoc));
+
+                    Vector<Integer> testLoc = new Vector<>();
+                    testLoc.add(gLoc.get(0)+1);
+                    while (cell==null && testLoc.get(0)<=9){
+                        cell = (Cell) deSerialize((String) g.getBuckets().get(testLoc));
+                        int irr = testLoc.get(0);
+                        testLoc.remove(0);
+                        testLoc.add(irr+1);
+                    }
+                    if(cell==null){
+                        return BEs;
+                    }
+
                     bucketEntry bE = new bucketEntry(gRecord, "somewhere");
                     int indexB = cell.searchBuckets(bE);
                     Bucket b = cell.getBuckets().get(indexB);
@@ -1234,7 +1251,7 @@ public class DBApp implements DBAppInterface{
                                 for (int j = 0; j < bb.getEntries().size(); j++) {
                                     if (firsttime) {
                                         firsttime = false;
-                                        j = indexBE+1;
+                                        j = indexBE;
                                     }
                                     bucketEntry bee = bb.getEntries().get(j);
                                     if (bee.getRow() != null) {
@@ -1251,6 +1268,19 @@ public class DBApp implements DBAppInterface{
                     boolean firsttime = true;
                     boolean firsttimeCell = true;
                     Cell cell = (Cell) deSerialize((String) g.getBuckets().get(gLoc));
+
+                    Vector<Integer> testLoc = new Vector<>();
+                    testLoc.add(gLoc.get(0)+1);
+                    while (cell==null && testLoc.get(0)<=9){
+                        cell = (Cell) deSerialize((String) g.getBuckets().get(testLoc));
+                        int irr = testLoc.get(0);
+                        testLoc.remove(0);
+                        testLoc.add(irr+1);
+                    }
+                    if(cell==null){
+                        return BEs;
+                    }
+
                     bucketEntry bE = new bucketEntry(gRecord, "somewhere");
                     int indexB = cell.searchBuckets(bE);
                     Bucket b = cell.getBuckets().get(indexB);
@@ -1282,6 +1312,19 @@ public class DBApp implements DBAppInterface{
                     return  BEs;
                 } else if (operator.equals("<")) {
                     Cell cell = (Cell) deSerialize((String) g.getBuckets().get(gLoc));
+
+                    Vector<Integer> testLoc = new Vector<>();
+                    testLoc.add(gLoc.get(0)-1);
+                    while (cell==null && testLoc.get(0)>=0 && testLoc.get(0)<=9){
+                            cell = (Cell) deSerialize((String) g.getBuckets().get(testLoc));
+                            int irr = testLoc.get(0);
+                            testLoc.remove(0);
+                            testLoc.add(irr-1);
+                    }
+                    if(cell==null){
+                        return BEs;
+                    }
+
                     bucketEntry bE = new bucketEntry(gRecord, "somewhere");
                     int indexB = cell.searchBuckets(bE);
                     Bucket b = cell.getBuckets().get(indexB);

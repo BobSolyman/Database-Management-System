@@ -9,18 +9,18 @@ public class test {
     public static void main(String[] args) throws IOException, DBAppException, ParseException {
         DBApp x=new DBApp();
         x.init();
-        Hashtable htblColNameType = new Hashtable( );
-        htblColNameType.put("id", "java.lang.Integer");
-        htblColNameType.put("name", "java.lang.String");
-        htblColNameType.put("gpa", "java.lang.Double");
-        Hashtable htblColNameMin = new Hashtable( );
-        htblColNameMin.put("id", "0");
-        htblColNameMin.put("name","a");
-        htblColNameMin.put("gpa", "0");
-        Hashtable htblColNameMax = new Hashtable( );
-        htblColNameMax.put("id", "999");
-        htblColNameMax.put("name", "zzzzzzzzz");
-        htblColNameMax.put("gpa", "999.999");
+//        Hashtable htblColNameType = new Hashtable( );
+//        htblColNameType.put("id", "java.lang.Integer");
+//        htblColNameType.put("name", "java.lang.String");
+//        htblColNameType.put("gpa", "java.lang.Double");
+//        Hashtable htblColNameMin = new Hashtable( );
+//        htblColNameMin.put("id", "0");
+//        htblColNameMin.put("name","a");
+//        htblColNameMin.put("gpa", "0");
+//        Hashtable htblColNameMax = new Hashtable( );
+//        htblColNameMax.put("id", "999");
+//        htblColNameMax.put("name", "zzzzzzzzz");
+//        htblColNameMax.put("gpa", "999.999");
 //        x.createTable( "test", "id", htblColNameType,htblColNameMin,htblColNameMax );
 //        DBTable table = x.getDb().get((String)"test");
 //        Vector pages = table.getPages();
@@ -429,7 +429,74 @@ public class test {
             System.out.println(bb.getRow());
         }
 
+        String tableName = "studentstest";
 
+        Hashtable<String, String> htblColNameType = new Hashtable<String, String>();
+        htblColNameType.put("id", "java.lang.String");
+        htblColNameType.put("gpa", "java.lang.Double");
+
+        Hashtable<String, String> minValues = new Hashtable<>();
+        minValues.put("id", "43-0000");
+        minValues.put("gpa", "0.7");
+
+        Hashtable<String, String> maxValues = new Hashtable<>();
+        maxValues.put("id", "99-9999");
+        maxValues.put("gpa", "5.0");
+
+        x.createTable(tableName, "id", htblColNameType, minValues, maxValues);
+
+        //insert
+        Hashtable<String, Object> colNameValue = new Hashtable<>();
+        colNameValue.put("id", "46-2664");
+        colNameValue.put("gpa", new Double(1.5));
+        x.insertIntoTable(tableName, colNameValue);
+
+        Hashtable<String, Object> colNameValue2 = new Hashtable<>();
+        colNameValue2.put("id", "46-2645");
+        colNameValue2.put("gpa", new Double(2.5));
+        x.insertIntoTable(tableName, colNameValue2);
+
+        Hashtable<String, Object> colNameValue1 = new Hashtable<>();
+        colNameValue1.put("id", "46-5151");
+        colNameValue1.put("gpa", new Double(4.5));
+        x.insertIntoTable(tableName, colNameValue1);
+
+        String[] colNames = new String[1];
+        colNames[0] = "gpa";
+        x.createIndex(tableName, colNames);
+
+
+        SQLTerm[] arrSQLTerms;
+        arrSQLTerms = new SQLTerm[1];
+        arrSQLTerms[0] = new SQLTerm();
+        arrSQLTerms[0]._strTableName = tableName;
+        arrSQLTerms[0]._strColumnName= "gpa";
+        arrSQLTerms[0]._strOperator = "<";
+        arrSQLTerms[0]._objValue = new Double(1.0);
+        String[]strarrOperators = new String[0];
+        Iterator ii = x.selectFromTable(arrSQLTerms, strarrOperators);
+        System.out.println("===========================================");
+        while (ii.hasNext()){
+            System.out.println(ii.next());
+        }
+
+//        System.out.println("===========================================");
+//
+//        Hashtable<String, Object> colNameValue5 = new Hashtable<>();
+//        colNameValue5.put("gpa", new Double(1.5));
+//        x.deleteFromTable(tableName, colNameValue5);
+//
+//        arrSQLTerms = new SQLTerm[1];
+//        arrSQLTerms[0] = new SQLTerm();
+//        arrSQLTerms[0]._strTableName = tableName;
+//        arrSQLTerms[0]._strColumnName= "gpa";
+//        arrSQLTerms[0]._strOperator = ">=";
+//        arrSQLTerms[0]._objValue = new Double(1.0);
+//        ii = x.selectFromTable(arrSQLTerms, strarrOperators);
+//        System.out.println("===========================================");
+//        while (ii.hasNext()){
+//            System.out.println(ii.next());
+//        }
 
     }//end of main
 
